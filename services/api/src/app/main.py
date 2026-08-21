@@ -5,14 +5,20 @@ from app.config import get_settings
 from app.errors import register_exception_handlers
 from app.logging_config import configure_logging
 from app.middleware.correlation import CorrelationIdMiddleware
-from app.openapi import OPENAPI_KWARGS
+from app.openapi import API_DESCRIPTION, API_VERSION, SERVERS, TAGS_METADATA
 from app.routers import health
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging()
-    app = FastAPI(title=settings.app_name, **OPENAPI_KWARGS)
+    app = FastAPI(
+        title=settings.app_name,
+        version=API_VERSION,
+        description=API_DESCRIPTION,
+        openapi_tags=TAGS_METADATA,
+        servers=SERVERS,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
