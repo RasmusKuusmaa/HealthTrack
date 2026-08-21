@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     jwt_issuer: str = "healthtrack-api"
     jwt_access_token_ttl_minutes: int = 15
+    refresh_token_ttl_days: int = 30
     # PEM-encoded RS256 keypair. Left unset in development, where a keypair
     # is generated once per process and never persisted — see app/security/jwt.py.
     jwt_private_key: str | None = None
