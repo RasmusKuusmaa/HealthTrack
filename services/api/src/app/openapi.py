@@ -8,6 +8,7 @@ API_DESCRIPTION = (
 
 TAGS_METADATA: list[dict[str, str]] = [
     {"name": "health", "description": "Liveness and readiness checks."},
+    {"name": "auth", "description": "Registration, login, and session management."},
 ]
 
 SERVERS: list[dict[str, str]] = [

@@ -1,4 +1,5 @@
 import hashlib
+from collections.abc import AsyncIterator
 
 import httpx
 from zxcvbn import zxcvbn
@@ -48,6 +49,13 @@ async def _check_breached(password: str, client: httpx.AsyncClient) -> str | Non
         if candidate_suffix == suffix:
             return "This password has appeared in a known data breach."
     return None
+
+
+async def get_http_client() -> AsyncIterator[httpx.AsyncClient]:
+    """FastAPI dependency wrapping a request-scoped httpx client, so tests
+    can override it (e.g. with a MockTransport) via dependency_overrides."""
+    async with httpx.AsyncClient() as client:
+        yield client
 
 
 async def validate_password_strength(

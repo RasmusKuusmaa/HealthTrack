@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 
+import httpx
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -16,6 +17,7 @@ import app.models  # noqa: F401  (registers models on Base.metadata)
 from app.config import get_settings
 from app.db import Base, get_db
 from app.main import create_app
+from app.security.password_strength import get_http_client
 
 pytestmark = pytest.mark.asyncio
 
@@ -81,12 +83,24 @@ async def db_session(db_connection: AsyncConnection) -> AsyncIterator[AsyncSessi
         await outer_transaction.rollback()
 
 
+def _no_breach_response(request: httpx.Request) -> httpx.Response:
+    """Default fake HIBP response for the `client` fixture: reports no
+    password as breached, so endpoint tests don't depend on the network."""
+    return httpx.Response(200, text="")
+
+
 @pytest_asyncio.fixture
 async def client(db_session: AsyncSession) -> AsyncIterator[AsyncClient]:
     app = create_app()
     app.dependency_overrides[get_db] = lambda: db_session
 
+    mock_http_client = httpx.AsyncClient(
+        transport=httpx.MockTransport(_no_breach_response)
+    )
+    app.dependency_overrides[get_http_client] = lambda: mock_http_client
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+    await mock_http_client.aclose()
     app.dependency_overrides.clear()
