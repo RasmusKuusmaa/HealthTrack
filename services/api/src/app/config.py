@@ -17,6 +17,9 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:3000"]
 
+    rate_limit_requests: int = 100
+    rate_limit_window_seconds: int = 60
+
     def resolved_test_database_url(self) -> str:
         """The database used by the test suite. Defaults to `<db>_test` on the
         same server so tests never touch the development database."""
