@@ -1,5 +1,3 @@
-import hashlib
-import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -8,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.models import RefreshToken
+from app.security.tokens import generate_raw_token, hash_token
 
 
 class RefreshTokenInvalidError(Exception):
@@ -23,14 +22,6 @@ class RefreshTokenReuseError(Exception):
     By the time this is raised, the entire token family has been revoked."""
 
 
-def _generate_raw_token() -> str:
-    return secrets.token_urlsafe(32)
-
-
-def _hash_token(raw_token: str) -> str:
-    return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
-
-
 async def issue_refresh_token(
     db: AsyncSession,
     user_id: uuid.UUID,
@@ -40,10 +31,10 @@ async def issue_refresh_token(
     """Issue a new refresh token. Pass `family_id` when rotating an existing
     chain; omit it to start a new chain (e.g. on login)."""
     settings = get_settings()
-    raw_token = _generate_raw_token()
+    raw_token = generate_raw_token()
     token = RefreshToken(
         user_id=user_id,
-        token_hash=_hash_token(raw_token),
+        token_hash=hash_token(raw_token),
         device_id=device_id,
         family_id=family_id or uuid.uuid4(),
         expires_at=datetime.now(UTC) + timedelta(days=settings.refresh_token_ttl_days),
@@ -74,7 +65,7 @@ async def rotate_refresh_token(
     RefreshTokenReuseError is raised — every device sharing that chain must
     log in again.
     """
-    token_hash = _hash_token(raw_token)
+    token_hash = hash_token(raw_token)
     result = await db.execute(
         select(RefreshToken).where(RefreshToken.token_hash == token_hash)
     )

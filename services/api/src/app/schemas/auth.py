@@ -15,3 +15,7 @@ class UserPublic(BaseModel):
     display_name: str
 
     model_config = {"from_attributes": True}
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str = Field(min_length=1)

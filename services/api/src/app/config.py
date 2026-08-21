@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     jwt_private_key: str | None = None
     jwt_public_key: str | None = None
 
+    email_verification_token_ttl_hours: int = 24
+
     def resolved_test_database_url(self) -> str:
         """The database used by the test suite. Defaults to `<db>_test` on the
         same server so tests never touch the development database."""

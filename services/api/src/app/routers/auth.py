@@ -5,13 +5,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
 from app.models import User, UserProfile
-from app.schemas.auth import RegisterRequest, UserPublic
+from app.schemas.auth import RegisterRequest, UserPublic, VerifyEmailRequest
 from app.security.password_strength import (
     PasswordTooWeakError,
     get_http_client,
     validate_password_strength,
 )
 from app.security.passwords import hash_password
+from app.services.email_verification import (
+    VerificationTokenAlreadyUsedError,
+    VerificationTokenExpiredError,
+    VerificationTokenInvalidError,
+    issue_verification_token,
+    verify_email,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -50,7 +57,27 @@ async def register(
     db.add(profile)
     await db.flush()
 
+    await issue_verification_token(db, user.id)
+
     return _user_public(user, profile)
+
+
+@router.post("/verify-email", status_code=status.HTTP_200_OK)
+async def verify_email_endpoint(
+    payload: VerifyEmailRequest, db: AsyncSession = Depends(get_db)
+) -> dict[str, bool]:
+    try:
+        await verify_email(db, payload.token)
+    except (
+        VerificationTokenInvalidError,
+        VerificationTokenExpiredError,
+        VerificationTokenAlreadyUsedError,
+    ) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+
+    return {"verified": True}
 
 
 def _user_public(user: User, profile: UserProfile) -> UserPublic:
