@@ -1,4 +1,24 @@
 services:
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+      target: builder
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-healthtrack}:${POSTGRES_PASSWORD:-healthtrack}@postgres:5432/${POSTGRES_DB:-healthtrack}
+      REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: '["http://localhost:3000"]'
+    volumes:
+      - ./services/api/src:/app/src
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   postgres:
     image: postgres:16
     restart: unless-stopped
