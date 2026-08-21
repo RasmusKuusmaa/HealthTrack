@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+import app.models  # noqa: F401  (registers models on Base.metadata)
 from app.config import get_settings
 from app.db import Base, get_db
 from app.main import create_app
@@ -47,6 +48,8 @@ async def test_engine() -> AsyncIterator[AsyncEngine]:
 
     engine = create_async_engine(test_url)
     async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     yield engine
