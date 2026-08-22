@@ -49,3 +49,11 @@ class PulledOp(BaseModel):
 class PullResponse(BaseModel):
     ops: list[PulledOp]
     next_cursor: int
+
+
+class BootstrapResponse(BaseModel):
+    # entity_type -> that type's live rows, each a plain field-name/value
+    # dict (id plus whatever fields its registered schema tracks) — not the
+    # op log, a compacted snapshot of current state. See docs/sync-protocol.md.
+    entities: dict[str, list[dict[str, Any]]]
+    cursor: int

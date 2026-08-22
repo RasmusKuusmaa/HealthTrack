@@ -8,6 +8,7 @@ from app.config import get_settings
 from app.db import get_db
 from app.models import Operation
 from app.schemas.sync import (
+    BootstrapResponse,
     PulledOp,
     PullResponse,
     PushOpResult,
@@ -15,6 +16,7 @@ from app.schemas.sync import (
     PushResponse,
 )
 from app.security.dependencies import get_current_user_id
+from app.services.sync_bootstrap import build_bootstrap_snapshot
 from app.services.sync_ingestion import ingest_op
 from app.sync.locking import acquire_user_sync_lock
 from app.sync.materializer import MaterializationError, materialize_op
@@ -100,3 +102,16 @@ async def pull(
     return PullResponse(
         ops=[PulledOp.model_validate(op) for op in ops], next_cursor=next_cursor
     )
+
+
+@router.post("/bootstrap", response_model=BootstrapResponse)
+async def bootstrap(
+    db: AsyncSession = Depends(get_db),
+    user_id: uuid.UUID = Depends(get_current_user_id),
+) -> BootstrapResponse:
+    """A full compacted snapshot of every entity the caller owns, for a new
+    (or reinstalled) device to skip replaying the whole op log — plus the
+    cursor to resume incremental GET /sync/pull from. See
+    docs/sync-protocol.md."""
+    entities, cursor = await build_bootstrap_snapshot(db, user_id)
+    return BootstrapResponse(entities=entities, cursor=cursor)

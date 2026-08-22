@@ -10,7 +10,9 @@ class EntityRegistration:
     schema: type[BaseModel]
     # The SQLAlchemy declarative model backing this entity's projection
     # table. Required convention: primary key column `id` (matching an
-    # op's `entity_id`) and a nullable `deleted_at` column for tombstones.
+    # op's `entity_id`), a `user_id` column (every synced entity is owned
+    # by one user — this scopes bootstrap snapshots), and a nullable
+    # `deleted_at` column for tombstones.
     model: type[Any]
 
 
@@ -35,6 +37,12 @@ def register_entity_type(
             f"Model {model.__name__} for entity_type {entity_type!r} has no "
             "'id' primary key column matching an op's entity_id."
         )
+    if not hasattr(model, "user_id"):
+        raise ValueError(
+            f"Model {model.__name__} for entity_type {entity_type!r} has no "
+            "'user_id' column — every synced entity must be scoped to its "
+            "owning user, so it can appear in that user's bootstrap snapshot."
+        )
     if not hasattr(model, "deleted_at"):
         raise ValueError(
             f"Model {model.__name__} for entity_type {entity_type!r} has no "
@@ -57,3 +65,7 @@ def get_entity_model(entity_type: str) -> type[Any] | None:
 
 def is_registered(entity_type: str) -> bool:
     return entity_type in _REGISTRATIONS
+
+
+def list_entity_types() -> list[str]:
+    return list(_REGISTRATIONS.keys())

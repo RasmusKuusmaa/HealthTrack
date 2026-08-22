@@ -21,6 +21,13 @@ register_entity_type(ENTITY_TYPE, SyncExampleItemSchema, SyncExampleItem)
 class _NoDeletedAtModel(Base):
     __tablename__ = "no_deleted_at_models"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+
+
+class _NoUserIdModel(Base):
+    __tablename__ = "no_user_id_models"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
 
 async def _make_user(db_session: AsyncSession, email: str) -> User:
@@ -56,6 +63,13 @@ def test_register_rejects_model_without_deleted_at() -> None:
     with pytest.raises(ValueError, match="deleted_at"):
         register_entity_type(
             f"bad_entity_{uuid.uuid4().hex}", BaseModel, _NoDeletedAtModel
+        )
+
+
+def test_register_rejects_model_without_user_id() -> None:
+    with pytest.raises(ValueError, match="user_id"):
+        register_entity_type(
+            f"bad_entity_{uuid.uuid4().hex}", BaseModel, _NoUserIdModel
         )
 
 

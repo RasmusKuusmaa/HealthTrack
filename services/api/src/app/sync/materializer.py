@@ -39,7 +39,7 @@ async def materialize_op(db: AsyncSession, op: Operation) -> None:
 
     if op.op_type == OpType.CREATE:
         if row is None:
-            row = model_cls(id=op.entity_id)
+            row = model_cls(id=op.entity_id, user_id=op.user_id)
             db.add(row)
             await db.flush()
         for field_name, value in op.payload.items():
