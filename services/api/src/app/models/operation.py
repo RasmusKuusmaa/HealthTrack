@@ -3,7 +3,15 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, func
+from sqlalchemy import (
+    BigInteger,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -18,6 +26,17 @@ class OpType(str, enum.Enum):
 
 class Operation(Base):
     __tablename__ = "operations"
+    __table_args__ = (
+        # GET /sync/pull's core query: WHERE user_id = ? AND server_seq > ?
+        # ORDER BY server_seq.
+        Index("ix_operations_user_id_server_seq", "user_id", "server_seq"),
+        # Idempotent ingestion (3.5) relies on this being enforced at the DB
+        # level, not just checked-then-inserted in application code, to be
+        # race-safe under concurrent retries of the same push.
+        UniqueConstraint(
+            "user_id", "client_op_id", name="uq_operations_user_id_client_op_id"
+        ),
+    )
 
     # The authoritative, per-user total order — see docs/sync-protocol.md.
     server_seq: Mapped[int] = mapped_column(
