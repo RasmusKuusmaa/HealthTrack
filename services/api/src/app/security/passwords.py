@@ -28,3 +28,10 @@ def needs_rehash(password_hash: str) -> bool:
     """True if the hash was made with different parameters than the current
     tuning — callers should rehash on next successful login."""
     return _hasher.check_needs_rehash(password_hash)
+
+
+# A precomputed hash with no matching password, verified against on login
+# when the given email doesn't match a user — so a nonexistent account
+# still pays the same Argon2 cost as a real one, closing the timing gap
+# that would otherwise reveal whether an email address is registered.
+DUMMY_PASSWORD_HASH = hash_password("dummy-password-for-timing-safety")

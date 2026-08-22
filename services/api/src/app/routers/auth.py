@@ -1,18 +1,27 @@
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.db import get_db
 from app.email import EmailSender, get_email_sender
 from app.models import User, UserProfile
-from app.schemas.auth import RegisterRequest, UserPublic, VerifyEmailRequest
+from app.schemas.auth import (
+    LoginRequest,
+    RegisterRequest,
+    TokenPair,
+    UserPublic,
+    VerifyEmailRequest,
+)
+from app.security.jwt import create_access_token
 from app.security.password_strength import (
     PasswordTooWeakError,
     get_http_client,
     validate_password_strength,
 )
-from app.security.passwords import hash_password
+from app.security.passwords import DUMMY_PASSWORD_HASH, hash_password, verify_password
 from app.services.email_verification import (
     VerificationTokenAlreadyUsedError,
     VerificationTokenExpiredError,
@@ -20,8 +29,11 @@ from app.services.email_verification import (
     issue_verification_token,
     verify_email,
 )
+from app.services.refresh_tokens import issue_refresh_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+INVALID_CREDENTIALS_DETAIL = "Invalid email or password."
 
 
 @router.post(
@@ -80,6 +92,35 @@ async def verify_email_endpoint(
         ) from exc
 
     return {"verified": True}
+
+
+@router.post("/login", response_model=TokenPair)
+async def login(
+    payload: LoginRequest, db: AsyncSession = Depends(get_db)
+) -> TokenPair:
+    result = await db.execute(select(User).where(User.email == payload.email))
+    user = result.scalar_one_or_none()
+
+    # Always verify against *some* hash, real or dummy, so a nonexistent
+    # account takes the same time as a wrong password on a real one.
+    password_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
+    password_ok = verify_password(payload.password, password_hash)
+
+    if user is None or not password_ok:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=INVALID_CREDENTIALS_DETAIL,
+        )
+
+    settings = get_settings()
+    access_token = create_access_token(subject=str(user.id))
+    refresh_token, _ = await issue_refresh_token(db, user.id, payload.device_id)
+
+    return TokenPair(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=settings.jwt_access_token_ttl_minutes * 60,
+    )
 
 
 def _user_public(user: User, profile: UserProfile) -> UserPublic:
