@@ -17,7 +17,9 @@ dependencies = [
     "pydantic>=2",
     "pydantic-settings>=2.15.0",
     "pyjwt[crypto]>=2.13.0",
+    "pyotp>=2.10.0",
     "python-json-logger>=4.2.0",
+    "qrcode[pil]>=8.2",
     "redis>=8.1.0",
     "sqlalchemy>=2.0",
     "uvicorn[standard]>=0.52.4",
@@ -46,7 +48,7 @@ asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
 
 [[tool.mypy.overrides]]
-module = "zxcvbn"
+module = ["zxcvbn", "qrcode"]
 ignore_missing_imports = true
 
 [tool.ruff]

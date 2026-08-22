@@ -50,3 +50,12 @@ class PasswordResetRequest(BaseModel):
 class PasswordResetConfirm(BaseModel):
     token: str = Field(min_length=1)
     new_password: str = Field(min_length=1, max_length=256)
+
+
+class TotpEnrollResponse(BaseModel):
+    provisioning_uri: str
+    qr_code_png_base64: str
+
+
+class TotpConfirmRequest(BaseModel):
+    code: str = Field(min_length=6, max_length=6)

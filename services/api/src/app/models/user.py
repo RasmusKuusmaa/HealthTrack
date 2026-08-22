@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, func
+from sqlalchemy import Boolean, DateTime, func
 from sqlalchemy.dialects.postgresql import CITEXT, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -31,4 +31,13 @@ class User(Base):
     )
     email_verified_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
+    )
+
+    # Plaintext for now — column-level encryption via pgcrypto lands in 19.12.
+    mfa_totp_secret: Mapped[str | None] = mapped_column(nullable=True)
+    # True only once the enrolled secret has been confirmed with a valid
+    # code; a non-null secret with this still False means enrollment is
+    # pending and MFA is not yet enforced at login.
+    mfa_totp_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default="false"
     )

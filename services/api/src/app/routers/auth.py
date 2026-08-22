@@ -21,6 +21,8 @@ from app.schemas.auth import (
     RefreshRequest,
     RegisterRequest,
     TokenPair,
+    TotpConfirmRequest,
+    TotpEnrollResponse,
     UserPublic,
     VerifyEmailRequest,
 )
@@ -39,6 +41,7 @@ from app.services.email_verification import (
     verify_email,
 )
 from app.services.login_throttle import clear_failures, is_locked_out, record_failure
+from app.services.mfa import TotpConfirmationError, confirm_totp, enroll_totp
 from app.services.password_reset import (
     PasswordResetTokenAlreadyUsedError,
     PasswordResetTokenExpiredError,
@@ -78,6 +81,19 @@ def _current_user_id(
             detail="Invalid or expired access token.",
         ) from exc
     return uuid.UUID(str(claims["sub"]))
+
+
+async def _get_current_user(
+    db: AsyncSession = Depends(get_db),
+    user_id: uuid.UUID = Depends(_current_user_id),
+) -> User:
+    user = await db.get(User, user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User for this token no longer exists.",
+        )
+    return user
 
 
 @router.post(
@@ -263,6 +279,31 @@ async def password_reset_confirm(
     # A password reset means the credential may have been compromised —
     # every existing session (everywhere) must re-authenticate.
     await revoke_all_user_tokens(db, user_id)
+
+
+@router.post("/mfa/totp/enroll", response_model=TotpEnrollResponse)
+async def mfa_totp_enroll(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_get_current_user),
+) -> TotpEnrollResponse:
+    provisioning_uri, qr_code_png_base64 = await enroll_totp(db, user)
+    return TotpEnrollResponse(
+        provisioning_uri=provisioning_uri, qr_code_png_base64=qr_code_png_base64
+    )
+
+
+@router.post("/mfa/totp/confirm", status_code=status.HTTP_204_NO_CONTENT)
+async def mfa_totp_confirm(
+    payload: TotpConfirmRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(_get_current_user),
+) -> None:
+    try:
+        await confirm_totp(db, user, payload.code)
+    except TotpConfirmationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
 
 
 def _user_public(user: User, profile: UserProfile) -> UserPublic:
