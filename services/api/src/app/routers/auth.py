@@ -2,7 +2,6 @@ import uuid
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -29,7 +28,8 @@ from app.schemas.auth import (
     UserPublic,
     VerifyEmailRequest,
 )
-from app.security.jwt import TokenError, create_access_token, decode_access_token
+from app.security.dependencies import get_current_user, get_current_user_id
+from app.security.jwt import create_access_token
 from app.security.password_strength import (
     PasswordTooWeakError,
     get_http_client,
@@ -75,37 +75,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 INVALID_CREDENTIALS_DETAIL = "Invalid email or password."
 LOCKED_OUT_DETAIL = "Too many failed login attempts. Try again later."
-
-_bearer_scheme = HTTPBearer()
-
-
-def _current_user_id(
-    credentials: HTTPAuthorizationCredentials = Depends(_bearer_scheme),
-) -> uuid.UUID:
-    """Minimal bearer-token identity check for this router. Superseded by
-    the shared `current_user` dependency (2.21), which will also load the
-    User row and apply scope checks."""
-    try:
-        claims = decode_access_token(credentials.credentials)
-    except TokenError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired access token.",
-        ) from exc
-    return uuid.UUID(str(claims["sub"]))
-
-
-async def _get_current_user(
-    db: AsyncSession = Depends(get_db),
-    user_id: uuid.UUID = Depends(_current_user_id),
-) -> User:
-    user = await db.get(User, user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User for this token no longer exists.",
-        )
-    return user
 
 
 @router.post(
@@ -270,7 +239,7 @@ async def logout(payload: LogoutRequest, db: AsyncSession = Depends(get_db)) -> 
 @router.post("/logout-all", status_code=status.HTTP_204_NO_CONTENT)
 async def logout_all(
     db: AsyncSession = Depends(get_db),
-    user_id: uuid.UUID = Depends(_current_user_id),
+    user_id: uuid.UUID = Depends(get_current_user_id),
 ) -> None:
     await revoke_all_user_tokens(db, user_id)
 
@@ -278,7 +247,7 @@ async def logout_all(
 @router.get("/sessions", response_model=list[DeviceOut])
 async def list_sessions(
     db: AsyncSession = Depends(get_db),
-    user_id: uuid.UUID = Depends(_current_user_id),
+    user_id: uuid.UUID = Depends(get_current_user_id),
 ) -> list[DeviceOut]:
     devices = await list_active_devices(db, user_id)
     return [DeviceOut.model_validate(device) for device in devices]
@@ -332,7 +301,7 @@ async def password_reset_confirm(
 @router.post("/mfa/totp/enroll", response_model=TotpEnrollResponse)
 async def mfa_totp_enroll(
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(_get_current_user),
+    user: User = Depends(get_current_user),
 ) -> TotpEnrollResponse:
     provisioning_uri, qr_code_png_base64 = await enroll_totp(db, user)
     return TotpEnrollResponse(
@@ -344,7 +313,7 @@ async def mfa_totp_enroll(
 async def mfa_totp_confirm(
     payload: TotpConfirmRequest,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(_get_current_user),
+    user: User = Depends(get_current_user),
 ) -> TotpConfirmResponse:
     try:
         recovery_codes = await confirm_totp(db, user, payload.code)
