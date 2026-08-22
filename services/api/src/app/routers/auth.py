@@ -14,6 +14,7 @@ from app.email import EmailSender, get_email_sender
 from app.models import User, UserProfile
 from app.redis_client import get_redis
 from app.schemas.auth import (
+    DeviceOut,
     LoginRequest,
     LogoutRequest,
     MfaRequiredResponse,
@@ -35,6 +36,7 @@ from app.security.password_strength import (
     validate_password_strength,
 )
 from app.security.passwords import DUMMY_PASSWORD_HASH, hash_password, verify_password
+from app.services.devices import list_active_devices, register_device
 from app.services.email_verification import (
     VerificationTokenAlreadyUsedError,
     VerificationTokenExpiredError,
@@ -216,6 +218,9 @@ async def login(
                 ) from exc
 
     await clear_failures(redis, payload.email)
+    await register_device(
+        db, user.id, payload.device_id, payload.device_name, payload.platform
+    )
 
     settings = get_settings()
     access_token = create_access_token(subject=str(user.id))
@@ -268,6 +273,15 @@ async def logout_all(
     user_id: uuid.UUID = Depends(_current_user_id),
 ) -> None:
     await revoke_all_user_tokens(db, user_id)
+
+
+@router.get("/sessions", response_model=list[DeviceOut])
+async def list_sessions(
+    db: AsyncSession = Depends(get_db),
+    user_id: uuid.UUID = Depends(_current_user_id),
+) -> list[DeviceOut]:
+    devices = await list_active_devices(db, user_id)
+    return [DeviceOut.model_validate(device) for device in devices]
 
 
 @router.post("/password-reset/request", status_code=status.HTTP_204_NO_CONTENT)

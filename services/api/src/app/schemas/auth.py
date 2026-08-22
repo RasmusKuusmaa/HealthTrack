@@ -1,7 +1,10 @@
 import uuid
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field
+
+from app.models import DevicePlatform
 
 
 class RegisterRequest(BaseModel):
@@ -26,6 +29,8 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1, max_length=256)
     device_id: uuid.UUID
+    device_name: str = Field(default="Unknown device", min_length=1, max_length=100)
+    platform: DevicePlatform = DevicePlatform.WEB
     totp_code: str | None = Field(default=None, min_length=6, max_length=6)
     recovery_code: str | None = Field(default=None, min_length=1, max_length=64)
 
@@ -70,3 +75,12 @@ class TotpConfirmRequest(BaseModel):
 
 class TotpConfirmResponse(BaseModel):
     recovery_codes: list[str]
+
+
+class DeviceOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    platform: DevicePlatform
+    last_seen_at: datetime
+
+    model_config = {"from_attributes": True}
