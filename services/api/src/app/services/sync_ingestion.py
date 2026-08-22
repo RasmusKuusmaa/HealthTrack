@@ -31,11 +31,13 @@ async def ingest_op(
     payload: dict[str, object],
     device_id: uuid.UUID,
     client_ts: datetime,
-) -> Operation:
+) -> tuple[Operation, bool]:
     """Append one op to the log. Idempotent: replaying a `client_op_id`
     already seen for this user returns the original row (same `server_seq`)
-    without inserting a duplicate or touching any projection table — this
-    only appends to the log, it does not materialize (see 3.6).
+    without inserting a duplicate — this only appends to the log, it does
+    not materialize (see 3.6). Returns `(op, is_new)` so callers (namely
+    `POST /sync/push`) know whether to materialize: a replayed op must not
+    be materialized again.
 
     Raises OpValidationError (from validate_op_payload) before ever
     touching the database if the payload is invalid.
@@ -44,7 +46,7 @@ async def ingest_op(
 
     existing = await _find_existing(db, user_id, client_op_id)
     if existing is not None:
-        return existing
+        return existing, False
 
     op = Operation(
         client_op_id=client_op_id,
@@ -65,6 +67,6 @@ async def ingest_op(
         existing = await _find_existing(db, user_id, client_op_id)
         if existing is None:
             raise  # some other integrity error — don't swallow it
-        return existing
+        return existing, False
 
-    return op
+    return op, True

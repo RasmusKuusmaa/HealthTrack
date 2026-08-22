@@ -36,7 +36,7 @@ async def _count_ops(db_session: AsyncSession, client_op_id: uuid.UUID) -> int:
 async def test_ingest_creates_a_new_op(db_session: AsyncSession) -> None:
     user = await _make_user(db_session, "ingest1@example.com")
 
-    op = await ingest_op(
+    op, is_new = await ingest_op(
         db_session,
         user_id=user.id,
         client_op_id=uuid.uuid4(),
@@ -49,6 +49,7 @@ async def test_ingest_creates_a_new_op(db_session: AsyncSession) -> None:
     )
 
     assert op.server_seq is not None
+    assert is_new is True
 
 
 async def test_replaying_client_op_id_returns_original_seq(
@@ -60,7 +61,7 @@ async def test_replaying_client_op_id_returns_original_seq(
     device_id = uuid.uuid4()
     client_ts = datetime.now(UTC)
 
-    first = await ingest_op(
+    first, first_is_new = await ingest_op(
         db_session,
         user_id=user.id,
         client_op_id=client_op_id,
@@ -72,7 +73,7 @@ async def test_replaying_client_op_id_returns_original_seq(
         client_ts=client_ts,
     )
 
-    second = await ingest_op(
+    second, second_is_new = await ingest_op(
         db_session,
         user_id=user.id,
         client_op_id=client_op_id,
@@ -85,6 +86,8 @@ async def test_replaying_client_op_id_returns_original_seq(
     )
 
     assert second.server_seq == first.server_seq
+    assert first_is_new is True
+    assert second_is_new is False
     assert await _count_ops(db_session, client_op_id) == 1
 
 
@@ -93,7 +96,7 @@ async def test_different_client_op_ids_create_separate_ops(
 ) -> None:
     user = await _make_user(db_session, "ingest3@example.com")
 
-    first = await ingest_op(
+    first, _ = await ingest_op(
         db_session,
         user_id=user.id,
         client_op_id=uuid.uuid4(),
@@ -104,7 +107,7 @@ async def test_different_client_op_ids_create_separate_ops(
         device_id=uuid.uuid4(),
         client_ts=datetime.now(UTC),
     )
-    second = await ingest_op(
+    second, _ = await ingest_op(
         db_session,
         user_id=user.id,
         client_op_id=uuid.uuid4(),

@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     # client stuffing an oversized blob into a jsonb column) without being
     # so tight it rejects legitimate multi-field updates.
     sync_max_payload_bytes: int = 16 * 1024
+    sync_max_push_batch_size: int = 500
 
     def resolved_test_database_url(self) -> str:
         """The database used by the test suite. Defaults to `<db>_test` on the
