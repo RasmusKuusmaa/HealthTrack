@@ -6,6 +6,7 @@ from app.models.mfa_recovery_code import MfaRecoveryCode
 from app.models.operation import Operation, OpType
 from app.models.password_reset_token import PasswordResetToken
 from app.models.refresh_token import RefreshToken
+from app.models.sync_snapshot import SyncSnapshot
 from app.models.user import User
 from app.models.user_profile import SexAtBirth, UnitSystem, UserProfile
 
@@ -24,4 +25,5 @@ __all__ = [
     "Operation",
     "OpType",
     "EntityFieldVersion",
+    "SyncSnapshot",
 ]
