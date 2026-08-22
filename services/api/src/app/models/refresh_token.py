@@ -24,8 +24,11 @@ class RefreshToken(Base):
     token_hash: Mapped[str] = mapped_column(unique=True, nullable=False)
 
     # Identifies the client device this token chain belongs to. Not yet a
-    # foreign key — the `devices` table lands later (2.19); this column will
-    # gain the FK constraint in a follow-up migration at that point.
+    # foreign key — the `devices` table exists (2.19) but device rows are
+    # only created on login starting in 2.20; adding the FK before then
+    # would break every login/refresh with a client-supplied device_id
+    # that has no matching row yet. The constraint lands once 2.20 makes
+    # that row creation happen first.
     device_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
 
     # Groups every token produced by rotating a single original login into
