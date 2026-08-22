@@ -89,3 +89,20 @@ async def rotate_refresh_token(
     )
     await db.flush()
     return new_raw_token, new_token
+
+
+async def revoke_refresh_token(db: AsyncSession, raw_token: str) -> bool:
+    """Revoke a single refresh token (logout on one device). Idempotent:
+    returns False rather than raising if the token is unknown or already
+    revoked, so callers can treat logout as always succeeding."""
+    token_hash = hash_token(raw_token)
+    result = await db.execute(
+        select(RefreshToken).where(RefreshToken.token_hash == token_hash)
+    )
+    existing = result.scalar_one_or_none()
+    if existing is None or existing.revoked_at is not None:
+        return False
+
+    existing.revoked_at = datetime.now(UTC)
+    await db.flush()
+    return True
