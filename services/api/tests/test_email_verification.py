@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.email.console import ConsoleEmailSender
 from app.models import EmailVerificationToken, User
 from app.services.email_verification import (
     VerificationTokenAlreadyUsedError,
@@ -23,9 +24,15 @@ async def _make_user(db_session: AsyncSession, email: str) -> User:
     return user
 
 
+async def _issue(db_session: AsyncSession, user: User) -> str:
+    return await issue_verification_token(
+        db_session, user.id, str(user.email), ConsoleEmailSender()
+    )
+
+
 async def test_issue_and_verify_marks_user_verified(db_session: AsyncSession) -> None:
     user = await _make_user(db_session, "verify1@example.com")
-    raw_token = await issue_verification_token(db_session, user.id)
+    raw_token = await _issue(db_session, user)
 
     verified_user = await verify_email(db_session, raw_token)
 
@@ -40,7 +47,7 @@ async def test_verify_rejects_unknown_token(db_session: AsyncSession) -> None:
 
 async def test_verify_rejects_expired_token(db_session: AsyncSession) -> None:
     user = await _make_user(db_session, "expired-verify@example.com")
-    raw_token = await issue_verification_token(db_session, user.id)
+    raw_token = await _issue(db_session, user)
 
     result = await db_session.execute(
         select(EmailVerificationToken).where(EmailVerificationToken.user_id == user.id)
@@ -55,7 +62,7 @@ async def test_verify_rejects_expired_token(db_session: AsyncSession) -> None:
 
 async def test_verify_rejects_reused_token(db_session: AsyncSession) -> None:
     user = await _make_user(db_session, "reuse-verify@example.com")
-    raw_token = await issue_verification_token(db_session, user.id)
+    raw_token = await _issue(db_session, user)
 
     await verify_email(db_session, raw_token)
 

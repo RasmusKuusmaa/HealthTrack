@@ -30,6 +30,17 @@ class Settings(BaseSettings):
 
     email_verification_token_ttl_hours: int = 24
 
+    # "console" logs emails instead of sending them — the default so local
+    # dev and tests never require a real mail server. Set "smtp" in any
+    # environment where mail should actually be delivered.
+    email_backend: str = "console"
+    email_from_address: str = "no-reply@healthtrack.example"
+    smtp_host: str = "localhost"
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_use_tls: bool = True
+
     def resolved_test_database_url(self) -> str:
         """The database used by the test suite. Defaults to `<db>_test` on the
         same server so tests never touch the development database."""

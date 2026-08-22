@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
+from app.email import EmailSender, get_email_sender
 from app.models import User, UserProfile
 from app.schemas.auth import RegisterRequest, UserPublic, VerifyEmailRequest
 from app.security.password_strength import (
@@ -30,6 +31,7 @@ async def register(
     payload: RegisterRequest,
     db: AsyncSession = Depends(get_db),
     http_client: httpx.AsyncClient = Depends(get_http_client),
+    email_sender: EmailSender = Depends(get_email_sender),
 ) -> UserPublic:
     try:
         await validate_password_strength(
@@ -57,7 +59,7 @@ async def register(
     db.add(profile)
     await db.flush()
 
-    await issue_verification_token(db, user.id)
+    await issue_verification_token(db, user.id, str(user.email), email_sender)
 
     return _user_public(user, profile)
 

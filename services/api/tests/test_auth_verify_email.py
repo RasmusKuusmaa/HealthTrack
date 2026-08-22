@@ -3,6 +3,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.email.console import ConsoleEmailSender
 from app.models import EmailVerificationToken, User
 from app.services.email_verification import issue_verification_token
 
@@ -16,11 +17,17 @@ async def _make_user(db_session: AsyncSession, email: str) -> User:
     return user
 
 
+async def _issue(db_session: AsyncSession, user: User) -> str:
+    return await issue_verification_token(
+        db_session, user.id, str(user.email), ConsoleEmailSender()
+    )
+
+
 async def test_verify_email_endpoint_succeeds(
     client: AsyncClient, db_session: AsyncSession
 ) -> None:
     user = await _make_user(db_session, "endpoint-verify@example.com")
-    raw_token = await issue_verification_token(db_session, user.id)
+    raw_token = await _issue(db_session, user)
 
     response = await client.post("/auth/verify-email", json={"token": raw_token})
 
@@ -43,7 +50,7 @@ async def test_verify_email_endpoint_rejects_reuse(
     client: AsyncClient, db_session: AsyncSession
 ) -> None:
     user = await _make_user(db_session, "endpoint-reuse@example.com")
-    raw_token = await issue_verification_token(db_session, user.id)
+    raw_token = await _issue(db_session, user)
 
     first = await client.post("/auth/verify-email", json={"token": raw_token})
     assert first.status_code == 200
