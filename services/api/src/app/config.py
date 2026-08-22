@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     smtp_password: str | None = None
     smtp_use_tls: bool = True
 
+    # Field-level partial payloads should be small; this bounds abuse (a
+    # client stuffing an oversized blob into a jsonb column) without being
+    # so tight it rejects legitimate multi-field updates.
+    sync_max_payload_bytes: int = 16 * 1024
+
     def resolved_test_database_url(self) -> str:
         """The database used by the test suite. Defaults to `<db>_test` on the
         same server so tests never touch the development database."""
