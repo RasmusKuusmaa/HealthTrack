@@ -1,4 +1,3 @@
-from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -58,6 +57,9 @@ async def materialize_op(db: AsyncSession, op: Operation) -> None:
             raise MaterializationError(
                 f"Cannot delete {op.entity_type} {op.entity_id}: no such entity."
             )
-        await _apply_field(db, op, row, "deleted_at", datetime.now(UTC))
+        # Use the op's own persisted server_ts, not wall-clock "now" — a
+        # replay of the same op must always produce the same tombstone
+        # timestamp (see docs/sync-protocol.md's replay-determinism goal).
+        await _apply_field(db, op, row, "deleted_at", op.server_ts)
 
     await db.flush()
