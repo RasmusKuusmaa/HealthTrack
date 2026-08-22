@@ -8,7 +8,7 @@ from app.middleware.correlation import CorrelationIdMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.openapi import API_DESCRIPTION, API_VERSION, SERVERS, TAGS_METADATA
 from app.redis_client import get_redis
-from app.routers import auth, health, sync
+from app.routers import auth, entities, health, sync
 
 
 def create_app() -> FastAPI:
@@ -39,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(auth.router)
     app.include_router(sync.router)
+    app.include_router(entities.router)
     return app
 
 
