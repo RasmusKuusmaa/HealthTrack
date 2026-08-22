@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     jwt_public_key: str | None = None
 
     email_verification_token_ttl_hours: int = 24
+    password_reset_token_ttl_hours: int = 1
 
     login_max_attempts: int = 5
     login_lockout_base_seconds: int = 30

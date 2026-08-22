@@ -16,6 +16,8 @@ from app.redis_client import get_redis
 from app.schemas.auth import (
     LoginRequest,
     LogoutRequest,
+    PasswordResetConfirm,
+    PasswordResetRequest,
     RefreshRequest,
     RegisterRequest,
     TokenPair,
@@ -37,6 +39,13 @@ from app.services.email_verification import (
     verify_email,
 )
 from app.services.login_throttle import clear_failures, is_locked_out, record_failure
+from app.services.password_reset import (
+    PasswordResetTokenAlreadyUsedError,
+    PasswordResetTokenExpiredError,
+    PasswordResetTokenInvalidError,
+    confirm_password_reset,
+    request_password_reset,
+)
 from app.services.refresh_tokens import (
     RefreshTokenExpiredError,
     RefreshTokenInvalidError,
@@ -208,6 +217,51 @@ async def logout_all(
     db: AsyncSession = Depends(get_db),
     user_id: uuid.UUID = Depends(_current_user_id),
 ) -> None:
+    await revoke_all_user_tokens(db, user_id)
+
+
+@router.post("/password-reset/request", status_code=status.HTTP_204_NO_CONTENT)
+async def password_reset_request(
+    payload: PasswordResetRequest,
+    db: AsyncSession = Depends(get_db),
+    email_sender: EmailSender = Depends(get_email_sender),
+) -> None:
+    # Always 204, whether or not the email matches an account — the body
+    # and status must not reveal which, or this becomes an enumeration oracle.
+    await request_password_reset(db, payload.email, email_sender)
+
+
+@router.post("/password-reset/confirm", status_code=status.HTTP_204_NO_CONTENT)
+async def password_reset_confirm(
+    payload: PasswordResetConfirm,
+    db: AsyncSession = Depends(get_db),
+    http_client: httpx.AsyncClient = Depends(get_http_client),
+) -> None:
+    try:
+        await validate_password_strength(
+            payload.new_password, http_client=http_client
+        )
+    except PasswordTooWeakError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="; ".join(exc.reasons),
+        ) from exc
+
+    try:
+        user_id = await confirm_password_reset(
+            db, payload.token, hash_password(payload.new_password)
+        )
+    except (
+        PasswordResetTokenInvalidError,
+        PasswordResetTokenExpiredError,
+        PasswordResetTokenAlreadyUsedError,
+    ) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+
+    # A password reset means the credential may have been compromised —
+    # every existing session (everywhere) must re-authenticate.
     await revoke_all_user_tokens(db, user_id)
 
 
