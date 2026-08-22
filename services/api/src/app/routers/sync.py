@@ -16,6 +16,7 @@ from app.schemas.sync import (
 )
 from app.security.dependencies import get_current_user_id
 from app.services.sync_ingestion import ingest_op
+from app.sync.locking import acquire_user_sync_lock
 from app.sync.materializer import MaterializationError, materialize_op
 from app.sync.validation import OpValidationError
 
@@ -31,6 +32,11 @@ async def push(
     """Ingest a batch of ops and materialize each new one, in the order
     the client sent them. Any invalid op fails the whole batch (the
     transaction rolls back) — see docs/sync-protocol.md."""
+    # Serializes concurrent pushes from this same user's other devices so
+    # their materialization can't interleave. Released automatically when
+    # this request's transaction ends (get_db commits or rolls back).
+    await acquire_user_sync_lock(db, user_id)
+
     results: list[PushOpResult] = []
 
     for op_request in payload.ops:
