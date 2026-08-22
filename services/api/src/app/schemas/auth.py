@@ -27,6 +27,7 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=256)
     device_id: uuid.UUID
     totp_code: str | None = Field(default=None, min_length=6, max_length=6)
+    recovery_code: str | None = Field(default=None, min_length=1, max_length=64)
 
 
 class TokenPair(BaseModel):
@@ -65,3 +66,7 @@ class TotpEnrollResponse(BaseModel):
 
 class TotpConfirmRequest(BaseModel):
     code: str = Field(min_length=6, max_length=6)
+
+
+class TotpConfirmResponse(BaseModel):
+    recovery_codes: list[str]

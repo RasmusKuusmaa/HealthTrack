@@ -71,7 +71,10 @@ async def test_confirm_activates_mfa_with_correct_code(
         json={"code": code},
         headers={"Authorization": f"Bearer {token}"},
     )
-    assert confirm.status_code == 204
+    assert confirm.status_code == 200
+    body = confirm.json()
+    assert len(body["recovery_codes"]) == 10
+    assert len(set(body["recovery_codes"])) == 10  # all unique
 
     await db_session.refresh(user)
     assert user.mfa_totp_enabled is True

@@ -47,12 +47,16 @@ async def test_login_succeeds_with_correct_credentials(
 async def test_login_rejects_wrong_password(
     client: AsyncClient, db_session: AsyncSession
 ) -> None:
-    await _make_user(db_session, "login2@example.com")
+    # Unique per run: a wrong-password attempt counts against the login
+    # throttle in real Redis, which has no per-test rollback like the DB —
+    # a fixed email would eventually trip the lockout across repeated runs.
+    email = f"login-wrongpw-{uuid.uuid4().hex}@example.com"
+    await _make_user(db_session, email)
 
     response = await client.post(
         "/auth/login",
         json={
-            "email": "login2@example.com",
+            "email": email,
             "password": "totally-wrong-password",
             "device_id": str(uuid.uuid4()),
         },
@@ -68,7 +72,7 @@ async def test_login_rejects_unknown_email_with_same_message(
     response = await client.post(
         "/auth/login",
         json={
-            "email": "nobody-here@example.com",
+            "email": f"nobody-{uuid.uuid4().hex}@example.com",
             "password": PASSWORD,
             "device_id": str(uuid.uuid4()),
         },
@@ -95,7 +99,7 @@ async def test_login_verifies_password_even_for_unknown_email(
     await client.post(
         "/auth/login",
         json={
-            "email": "still-nobody@example.com",
+            "email": f"still-nobody-{uuid.uuid4().hex}@example.com",
             "password": PASSWORD,
             "device_id": str(uuid.uuid4()),
         },

@@ -23,6 +23,7 @@ from app.schemas.auth import (
     RegisterRequest,
     TokenPair,
     TotpConfirmRequest,
+    TotpConfirmResponse,
     TotpEnrollResponse,
     UserPublic,
     VerifyEmailRequest,
@@ -43,9 +44,11 @@ from app.services.email_verification import (
 )
 from app.services.login_throttle import clear_failures, is_locked_out, record_failure
 from app.services.mfa import (
+    RecoveryCodeInvalidError,
     TotpConfirmationError,
     TotpLoginVerificationError,
     confirm_totp,
+    consume_recovery_code,
     enroll_totp,
     verify_totp_login,
 )
@@ -189,19 +192,28 @@ async def login(
         )
 
     if user.mfa_totp_enabled:
-        if payload.totp_code is None:
+        if payload.recovery_code is not None:
+            try:
+                await consume_recovery_code(db, user, payload.recovery_code)
+            except RecoveryCodeInvalidError as exc:
+                await record_failure(redis, payload.email)
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+                ) from exc
+        elif payload.totp_code is None:
             # Password was correct, but the caller must resubmit with a
-            # TOTP code — no failure recorded, since this isn't wrong
-            # credentials, and no tokens issued until MFA passes.
+            # TOTP code (or recovery code) — no failure recorded, since
+            # this isn't wrong credentials, and no tokens issued until
+            # MFA passes.
             return MfaRequiredResponse()
-
-        try:
-            await verify_totp_login(db, user, payload.totp_code)
-        except TotpLoginVerificationError as exc:
-            await record_failure(redis, payload.email)
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
-            ) from exc
+        else:
+            try:
+                await verify_totp_login(db, user, payload.totp_code)
+            except TotpLoginVerificationError as exc:
+                await record_failure(redis, payload.email)
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+                ) from exc
 
     await clear_failures(redis, payload.email)
 
@@ -314,18 +326,19 @@ async def mfa_totp_enroll(
     )
 
 
-@router.post("/mfa/totp/confirm", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/mfa/totp/confirm", response_model=TotpConfirmResponse)
 async def mfa_totp_confirm(
     payload: TotpConfirmRequest,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(_get_current_user),
-) -> None:
+) -> TotpConfirmResponse:
     try:
-        await confirm_totp(db, user, payload.code)
+        recovery_codes = await confirm_totp(db, user, payload.code)
     except TotpConfirmationError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
         ) from exc
+    return TotpConfirmResponse(recovery_codes=recovery_codes)
 
 
 def _user_public(user: User, profile: UserProfile) -> UserPublic:

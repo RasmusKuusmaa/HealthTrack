@@ -73,7 +73,10 @@ async def test_request_returns_204_for_unknown_email_without_creating_token(
 async def test_confirm_resets_password_and_revokes_sessions(
     client: AsyncClient, db_session: AsyncSession
 ) -> None:
-    email = "reset2@example.com"
+    # Unique per run: the old-password login attempt below counts against
+    # the login throttle in real Redis, which has no per-test rollback like
+    # the DB — a fixed email would eventually trip the lockout across runs.
+    email = f"reset2-{uuid.uuid4().hex}@example.com"
     await _make_user(db_session, email)
     device_id = str(uuid.uuid4())
 
