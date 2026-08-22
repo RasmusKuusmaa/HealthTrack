@@ -20,3 +20,10 @@ class EntityHistoryEntry(BaseModel):
 
 class EntityHistoryResponse(BaseModel):
     history: list[EntityHistoryEntry]
+
+
+class RevertRequest(BaseModel):
+    # The server_seq (from a GET .../history entry) to restore field values
+    # back to.
+    target_server_seq: int
+    device_id: uuid.UUID
