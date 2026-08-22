@@ -21,6 +21,10 @@ class RefreshTokenReuseError(Exception):
     """Raised when an already-rotated (or revoked) token is presented again.
     By the time this is raised, the entire token family has been revoked."""
 
+    def __init__(self, message: str, user_id: uuid.UUID) -> None:
+        self.user_id = user_id
+        super().__init__(message)
+
 
 async def issue_refresh_token(
     db: AsyncSession,
@@ -77,7 +81,8 @@ async def rotate_refresh_token(
         await _revoke_family(db, existing.family_id)
         await db.flush()
         raise RefreshTokenReuseError(
-            "Refresh token reuse detected; the token family has been revoked."
+            "Refresh token reuse detected; the token family has been revoked.",
+            user_id=existing.user_id,
         )
 
     if existing.expires_at < datetime.now(UTC):

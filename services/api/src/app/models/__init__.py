@@ -1,3 +1,4 @@
+from app.models.audit_log import AuditLog
 from app.models.device import Device, DevicePlatform
 from app.models.email_verification_token import EmailVerificationToken
 from app.models.mfa_recovery_code import MfaRecoveryCode
@@ -17,4 +18,5 @@ __all__ = [
     "MfaRecoveryCode",
     "Device",
     "DevicePlatform",
+    "AuditLog",
 ]

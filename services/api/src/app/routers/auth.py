@@ -1,7 +1,7 @@
 import uuid
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -36,6 +36,7 @@ from app.security.password_strength import (
     validate_password_strength,
 )
 from app.security.passwords import DUMMY_PASSWORD_HASH, hash_password, verify_password
+from app.services.audit import AuditEventType, record_audit_event
 from app.services.devices import list_active_devices, register_device
 from app.services.email_verification import (
     VerificationTokenAlreadyUsedError,
@@ -82,6 +83,7 @@ LOCKED_OUT_DETAIL = "Too many failed login attempts. Try again later."
 )
 async def register(
     payload: RegisterRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     http_client: httpx.AsyncClient = Depends(get_http_client),
     email_sender: EmailSender = Depends(get_email_sender),
@@ -113,16 +115,21 @@ async def register(
     await db.flush()
 
     await issue_verification_token(db, user.id, str(user.email), email_sender)
+    await record_audit_event(
+        db, AuditEventType.USER_REGISTERED, user_id=user.id, request=request
+    )
 
     return _user_public(user, profile)
 
 
 @router.post("/verify-email", status_code=status.HTTP_200_OK)
 async def verify_email_endpoint(
-    payload: VerifyEmailRequest, db: AsyncSession = Depends(get_db)
+    payload: VerifyEmailRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, bool]:
     try:
-        await verify_email(db, payload.token)
+        user = await verify_email(db, payload.token)
     except (
         VerificationTokenInvalidError,
         VerificationTokenExpiredError,
@@ -132,16 +139,26 @@ async def verify_email_endpoint(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
         ) from exc
 
+    await record_audit_event(
+        db, AuditEventType.EMAIL_VERIFIED, user_id=user.id, request=request
+    )
     return {"verified": True}
 
 
 @router.post("/login", response_model=TokenPair | MfaRequiredResponse)
 async def login(
     payload: LoginRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
 ) -> TokenPair | MfaRequiredResponse:
     if await is_locked_out(redis, payload.email):
+        await record_audit_event(
+            db,
+            AuditEventType.LOGIN_LOCKED_OUT,
+            request=request,
+            metadata={"email": payload.email},
+        )
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=LOCKED_OUT_DETAIL,
@@ -157,6 +174,13 @@ async def login(
 
     if user is None or not password_ok:
         await record_failure(redis, payload.email)
+        await record_audit_event(
+            db,
+            AuditEventType.LOGIN_FAILED,
+            user_id=user.id if user is not None else None,
+            request=request,
+            metadata={"email": payload.email, "reason": "invalid_credentials"},
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=INVALID_CREDENTIALS_DETAIL,
@@ -168,9 +192,22 @@ async def login(
                 await consume_recovery_code(db, user, payload.recovery_code)
             except RecoveryCodeInvalidError as exc:
                 await record_failure(redis, payload.email)
+                await record_audit_event(
+                    db,
+                    AuditEventType.LOGIN_FAILED,
+                    user_id=user.id,
+                    request=request,
+                    metadata={"reason": "invalid_recovery_code"},
+                )
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
                 ) from exc
+            await record_audit_event(
+                db,
+                AuditEventType.MFA_RECOVERY_CODE_USED,
+                user_id=user.id,
+                request=request,
+            )
         elif payload.totp_code is None:
             # Password was correct, but the caller must resubmit with a
             # TOTP code (or recovery code) — no failure recorded, since
@@ -182,6 +219,13 @@ async def login(
                 await verify_totp_login(db, user, payload.totp_code)
             except TotpLoginVerificationError as exc:
                 await record_failure(redis, payload.email)
+                await record_audit_event(
+                    db,
+                    AuditEventType.LOGIN_FAILED,
+                    user_id=user.id,
+                    request=request,
+                    metadata={"reason": "invalid_totp_code"},
+                )
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
                 ) from exc
@@ -189,6 +233,13 @@ async def login(
     await clear_failures(redis, payload.email)
     await register_device(
         db, user.id, payload.device_id, payload.device_name, payload.platform
+    )
+    await record_audit_event(
+        db,
+        AuditEventType.LOGIN_SUCCEEDED,
+        user_id=user.id,
+        request=request,
+        metadata={"device_id": str(payload.device_id)},
     )
 
     settings = get_settings()
@@ -204,17 +255,23 @@ async def login(
 
 @router.post("/refresh", response_model=TokenPair)
 async def refresh(
-    payload: RefreshRequest, db: AsyncSession = Depends(get_db)
+    payload: RefreshRequest, request: Request, db: AsyncSession = Depends(get_db)
 ) -> TokenPair:
     try:
         new_refresh_token, new_token = await rotate_refresh_token(
             db, payload.refresh_token, payload.device_id
         )
-    except (
-        RefreshTokenInvalidError,
-        RefreshTokenExpiredError,
-        RefreshTokenReuseError,
-    ) as exc:
+    except RefreshTokenReuseError as exc:
+        await record_audit_event(
+            db,
+            AuditEventType.REFRESH_TOKEN_REUSE_DETECTED,
+            user_id=exc.user_id,
+            request=request,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+        ) from exc
+    except (RefreshTokenInvalidError, RefreshTokenExpiredError) as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
         ) from exc
@@ -230,18 +287,25 @@ async def refresh(
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(payload: LogoutRequest, db: AsyncSession = Depends(get_db)) -> None:
+async def logout(
+    payload: LogoutRequest, request: Request, db: AsyncSession = Depends(get_db)
+) -> None:
     # Idempotent by design: whether the token existed or not, the caller's
     # intent (this session should be logged out) is now satisfied either way.
     await revoke_refresh_token(db, payload.refresh_token)
+    await record_audit_event(db, AuditEventType.LOGOUT, request=request)
 
 
 @router.post("/logout-all", status_code=status.HTTP_204_NO_CONTENT)
 async def logout_all(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     user_id: uuid.UUID = Depends(get_current_user_id),
 ) -> None:
     await revoke_all_user_tokens(db, user_id)
+    await record_audit_event(
+        db, AuditEventType.LOGOUT_ALL, user_id=user_id, request=request
+    )
 
 
 @router.get("/sessions", response_model=list[DeviceOut])
@@ -256,17 +320,25 @@ async def list_sessions(
 @router.post("/password-reset/request", status_code=status.HTTP_204_NO_CONTENT)
 async def password_reset_request(
     payload: PasswordResetRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     email_sender: EmailSender = Depends(get_email_sender),
 ) -> None:
     # Always 204, whether or not the email matches an account — the body
     # and status must not reveal which, or this becomes an enumeration oracle.
     await request_password_reset(db, payload.email, email_sender)
+    await record_audit_event(
+        db,
+        AuditEventType.PASSWORD_RESET_REQUESTED,
+        request=request,
+        metadata={"email": payload.email},
+    )
 
 
 @router.post("/password-reset/confirm", status_code=status.HTTP_204_NO_CONTENT)
 async def password_reset_confirm(
     payload: PasswordResetConfirm,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     http_client: httpx.AsyncClient = Depends(get_http_client),
 ) -> None:
@@ -296,14 +368,21 @@ async def password_reset_confirm(
     # A password reset means the credential may have been compromised —
     # every existing session (everywhere) must re-authenticate.
     await revoke_all_user_tokens(db, user_id)
+    await record_audit_event(
+        db, AuditEventType.PASSWORD_RESET_CONFIRMED, user_id=user_id, request=request
+    )
 
 
 @router.post("/mfa/totp/enroll", response_model=TotpEnrollResponse)
 async def mfa_totp_enroll(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> TotpEnrollResponse:
     provisioning_uri, qr_code_png_base64 = await enroll_totp(db, user)
+    await record_audit_event(
+        db, AuditEventType.MFA_ENROLLED, user_id=user.id, request=request
+    )
     return TotpEnrollResponse(
         provisioning_uri=provisioning_uri, qr_code_png_base64=qr_code_png_base64
     )
@@ -312,6 +391,7 @@ async def mfa_totp_enroll(
 @router.post("/mfa/totp/confirm", response_model=TotpConfirmResponse)
 async def mfa_totp_confirm(
     payload: TotpConfirmRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> TotpConfirmResponse:
@@ -321,6 +401,9 @@ async def mfa_totp_confirm(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
         ) from exc
+    await record_audit_event(
+        db, AuditEventType.MFA_CONFIRMED, user_id=user.id, request=request
+    )
     return TotpConfirmResponse(recovery_codes=recovery_codes)
 
 
