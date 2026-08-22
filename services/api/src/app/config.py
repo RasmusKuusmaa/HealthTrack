@@ -30,6 +30,11 @@ class Settings(BaseSettings):
 
     email_verification_token_ttl_hours: int = 24
 
+    login_max_attempts: int = 5
+    login_lockout_base_seconds: int = 30
+    login_lockout_max_seconds: int = 3600
+    login_failure_window_seconds: int = 86400
+
     # "console" logs emails instead of sending them — the default so local
     # dev and tests never require a real mail server. Set "smtp" in any
     # environment where mail should actually be delivered.

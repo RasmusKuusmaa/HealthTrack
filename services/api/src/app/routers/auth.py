@@ -1,5 +1,6 @@
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
+from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +9,7 @@ from app.config import get_settings
 from app.db import get_db
 from app.email import EmailSender, get_email_sender
 from app.models import User, UserProfile
+from app.redis_client import get_redis
 from app.schemas.auth import (
     LoginRequest,
     RegisterRequest,
@@ -29,11 +31,13 @@ from app.services.email_verification import (
     issue_verification_token,
     verify_email,
 )
+from app.services.login_throttle import clear_failures, is_locked_out, record_failure
 from app.services.refresh_tokens import issue_refresh_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 INVALID_CREDENTIALS_DETAIL = "Invalid email or password."
+LOCKED_OUT_DETAIL = "Too many failed login attempts. Try again later."
 
 
 @router.post(
@@ -96,8 +100,16 @@ async def verify_email_endpoint(
 
 @router.post("/login", response_model=TokenPair)
 async def login(
-    payload: LoginRequest, db: AsyncSession = Depends(get_db)
+    payload: LoginRequest,
+    db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
 ) -> TokenPair:
+    if await is_locked_out(redis, payload.email):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=LOCKED_OUT_DETAIL,
+        )
+
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
 
@@ -107,10 +119,13 @@ async def login(
     password_ok = verify_password(payload.password, password_hash)
 
     if user is None or not password_ok:
+        await record_failure(redis, payload.email)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=INVALID_CREDENTIALS_DETAIL,
         )
+
+    await clear_failures(redis, payload.email)
 
     settings = get_settings()
     access_token = create_access_token(subject=str(user.id))

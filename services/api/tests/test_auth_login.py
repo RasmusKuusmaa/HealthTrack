@@ -123,3 +123,62 @@ async def test_login_issued_refresh_token_is_usable(
     )
     assert new_raw_token != refresh_token
     assert new_token.revoked_at is None
+
+
+async def test_login_locks_out_after_repeated_failures(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    # Unique per run: unlike the transactional DB, Redis lockout state has
+    # no per-test rollback, so a fixed email would leak state across runs.
+    email = f"lockout-target-{uuid.uuid4().hex}@example.com"
+    await _make_user(db_session, email)
+    wrong_payload = {
+        "email": email,
+        "password": "definitely-wrong",
+        "device_id": str(uuid.uuid4()),
+    }
+
+    for _ in range(5):  # default threshold is 5
+        response = await client.post("/auth/login", json=wrong_payload)
+        assert response.status_code == 401
+
+    locked_response = await client.post(
+        "/auth/login",
+        json={"email": email, "password": PASSWORD, "device_id": str(uuid.uuid4())},
+    )
+    assert locked_response.status_code == 429
+    expected_detail = "Too many failed login attempts. Try again later."
+    assert locked_response.json()["title"] == expected_detail
+
+
+async def test_successful_login_clears_prior_failures(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    email = f"recovers-target-{uuid.uuid4().hex}@example.com"
+    await _make_user(db_session, email)
+    wrong_payload = {
+        "email": email,
+        "password": "definitely-wrong",
+        "device_id": str(uuid.uuid4()),
+    }
+
+    for _ in range(3):  # below the lockout threshold
+        response = await client.post("/auth/login", json=wrong_payload)
+        assert response.status_code == 401
+
+    good_payload = {
+        "email": email,
+        "password": PASSWORD,
+        "device_id": str(uuid.uuid4()),
+    }
+    success = await client.post("/auth/login", json=good_payload)
+    assert success.status_code == 200
+
+    # Further failures should need the full threshold again, not continue
+    # from where the previous (now-cleared) streak left off.
+    for _ in range(4):
+        response = await client.post("/auth/login", json=wrong_payload)
+        assert response.status_code == 401
+
+    still_allowed = await client.post("/auth/login", json=good_payload)
+    assert still_allowed.status_code == 200
