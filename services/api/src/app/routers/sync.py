@@ -1,10 +1,19 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.db import get_db
-from app.schemas.sync import PushOpResult, PushRequest, PushResponse
+from app.models import Operation
+from app.schemas.sync import (
+    PulledOp,
+    PullResponse,
+    PushOpResult,
+    PushRequest,
+    PushResponse,
+)
 from app.security.dependencies import get_current_user_id
 from app.services.sync_ingestion import ingest_op
 from app.sync.materializer import MaterializationError, materialize_op
@@ -55,3 +64,33 @@ async def push(
         )
 
     return PushResponse(results=results)
+
+
+@router.get("/pull", response_model=PullResponse)
+async def pull(
+    since: int = Query(default=0, ge=0),
+    limit: int | None = Query(default=None, gt=0),
+    db: AsyncSession = Depends(get_db),
+    user_id: uuid.UUID = Depends(get_current_user_id),
+) -> PullResponse:
+    """Ops for the caller with server_seq > `since`, in server_seq order,
+    up to `limit` — page through by re-calling with each response's
+    `next_cursor` until a page comes back empty. See docs/sync-protocol.md.
+    """
+    settings = get_settings()
+    effective_limit = min(
+        limit or settings.sync_pull_default_limit, settings.sync_pull_max_limit
+    )
+
+    result = await db.execute(
+        select(Operation)
+        .where(Operation.user_id == user_id, Operation.server_seq > since)
+        .order_by(Operation.server_seq)
+        .limit(effective_limit)
+    )
+    ops = result.scalars().all()
+    next_cursor = ops[-1].server_seq if ops else since
+
+    return PullResponse(
+        ops=[PulledOp.model_validate(op) for op in ops], next_cursor=next_cursor
+    )

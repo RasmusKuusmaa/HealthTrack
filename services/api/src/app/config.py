@@ -52,6 +52,8 @@ class Settings(BaseSettings):
     # so tight it rejects legitimate multi-field updates.
     sync_max_payload_bytes: int = 16 * 1024
     sync_max_push_batch_size: int = 500
+    sync_pull_default_limit: int = 500
+    sync_pull_max_limit: int = 2000
 
     def resolved_test_database_url(self) -> str:
         """The database used by the test suite. Defaults to `<db>_test` on the

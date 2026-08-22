@@ -31,3 +31,21 @@ class PushOpResult(BaseModel):
 
 class PushResponse(BaseModel):
     results: list[PushOpResult]
+
+
+class PulledOp(BaseModel):
+    server_seq: int
+    client_op_id: uuid.UUID
+    entity_type: str
+    entity_id: uuid.UUID
+    op_type: OpType
+    payload: dict[str, Any]
+    device_id: uuid.UUID
+    client_ts: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class PullResponse(BaseModel):
+    ops: list[PulledOp]
+    next_cursor: int
