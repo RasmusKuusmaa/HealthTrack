@@ -26,6 +26,22 @@ def register_entity_type(
 ) -> None:
     if entity_type in _REGISTRATIONS:
         raise ValueError(f"Entity type {entity_type!r} is already registered.")
+
+    # Soft delete is not optional (docs/sync-protocol.md: "never hard-delete
+    # rows") — catch a model that can't support it at registration time,
+    # not the first time a delete op for it fails to materialize.
+    if not hasattr(model, "id"):
+        raise ValueError(
+            f"Model {model.__name__} for entity_type {entity_type!r} has no "
+            "'id' primary key column matching an op's entity_id."
+        )
+    if not hasattr(model, "deleted_at"):
+        raise ValueError(
+            f"Model {model.__name__} for entity_type {entity_type!r} has no "
+            "'deleted_at' column — every synced entity must support "
+            "tombstone-based soft delete."
+        )
+
     _REGISTRATIONS[entity_type] = EntityRegistration(schema=schema, model=model)
 
 
