@@ -91,6 +91,20 @@ async def rotate_refresh_token(
     return new_raw_token, new_token
 
 
+async def revoke_all_user_tokens(db: AsyncSession, user_id: uuid.UUID) -> None:
+    """Revoke every still-active refresh token for a user, across every
+    device and family — used by logout-all / "sign out everywhere"."""
+    await db.execute(
+        update(RefreshToken)
+        .where(
+            RefreshToken.user_id == user_id,
+            RefreshToken.revoked_at.is_(None),
+        )
+        .values(revoked_at=datetime.now(UTC))
+    )
+    await db.flush()
+
+
 async def revoke_refresh_token(db: AsyncSession, raw_token: str) -> bool:
     """Revoke a single refresh token (logout on one device). Idempotent:
     returns False rather than raising if the token is unknown or already
