@@ -1,37 +1,15 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import EntityFieldVersion, Operation, OpType
+from app.models import Operation, OpType
+from app.sync.conflict_resolution import resolve_field
 from app.sync.registry import get_entity_model
 
 
 class MaterializationError(Exception):
     pass
-
-
-async def _get_field_version(
-    db: AsyncSession, entity_id: Any, field_name: str
-) -> EntityFieldVersion | None:
-    result = await db.execute(
-        select(EntityFieldVersion).where(
-            EntityFieldVersion.entity_id == entity_id,
-            EntityFieldVersion.field_name == field_name,
-        )
-    )
-    return result.scalar_one_or_none()
-
-
-def _wins(op: Operation, current: EntityFieldVersion | None) -> bool:
-    """Field-level last-write-wins: later client_ts wins; server_seq breaks
-    a tie (see docs/sync-protocol.md)."""
-    if current is None:
-        return True
-    if op.client_ts != current.client_ts:
-        return op.client_ts > current.client_ts
-    return op.server_seq > current.server_seq
 
 
 async def _apply_field(
@@ -42,23 +20,8 @@ async def _apply_field(
             f"{op.entity_type} has no field {field_name!r} to materialize."
         )
 
-    current = await _get_field_version(db, op.entity_id, field_name)
-    if not _wins(op, current):
+    if not await resolve_field(db, op, field_name):
         return  # a later write already won this field — this op loses
-
-    if current is None:
-        db.add(
-            EntityFieldVersion(
-                entity_id=op.entity_id,
-                field_name=field_name,
-                user_id=op.user_id,
-                client_ts=op.client_ts,
-                server_seq=op.server_seq,
-            )
-        )
-    else:
-        current.client_ts = op.client_ts
-        current.server_seq = op.server_seq
 
     setattr(row, field_name, value)
 
