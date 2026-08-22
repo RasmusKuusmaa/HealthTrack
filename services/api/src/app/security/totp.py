@@ -1,5 +1,6 @@
 import base64
 import io
+from datetime import UTC, datetime
 
 import pyotp
 import qrcode
@@ -22,3 +23,9 @@ def build_qr_code_png_base64(provisioning_uri: str) -> str:
 
 def verify_totp_code(secret: str, code: str) -> bool:
     return pyotp.TOTP(secret).verify(code)
+
+
+def totp_current_step(secret: str) -> int:
+    """The current 30s time-step index, used to detect replay of a code
+    that was already accepted within its own validity window."""
+    return int(pyotp.TOTP(secret).timecode(datetime.now(UTC)))

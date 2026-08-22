@@ -41,3 +41,6 @@ class User(Base):
     mfa_totp_enabled: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default="false"
     )
+    # The most recent 30s time-step whose code was accepted, so the same
+    # code can't be replayed again within its own validity window.
+    mfa_totp_last_used_step: Mapped[int | None] = mapped_column(nullable=True)

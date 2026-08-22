@@ -1,4 +1,5 @@
 import uuid
+from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -25,6 +26,7 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1, max_length=256)
     device_id: uuid.UUID
+    totp_code: str | None = Field(default=None, min_length=6, max_length=6)
 
 
 class TokenPair(BaseModel):
@@ -32,6 +34,10 @@ class TokenPair(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
     expires_in: int
+
+
+class MfaRequiredResponse(BaseModel):
+    mfa_required: Literal[True] = True
 
 
 class RefreshRequest(BaseModel):

@@ -16,6 +16,7 @@ from app.redis_client import get_redis
 from app.schemas.auth import (
     LoginRequest,
     LogoutRequest,
+    MfaRequiredResponse,
     PasswordResetConfirm,
     PasswordResetRequest,
     RefreshRequest,
@@ -41,7 +42,13 @@ from app.services.email_verification import (
     verify_email,
 )
 from app.services.login_throttle import clear_failures, is_locked_out, record_failure
-from app.services.mfa import TotpConfirmationError, confirm_totp, enroll_totp
+from app.services.mfa import (
+    TotpConfirmationError,
+    TotpLoginVerificationError,
+    confirm_totp,
+    enroll_totp,
+    verify_totp_login,
+)
 from app.services.password_reset import (
     PasswordResetTokenAlreadyUsedError,
     PasswordResetTokenExpiredError,
@@ -154,12 +161,12 @@ async def verify_email_endpoint(
     return {"verified": True}
 
 
-@router.post("/login", response_model=TokenPair)
+@router.post("/login", response_model=TokenPair | MfaRequiredResponse)
 async def login(
     payload: LoginRequest,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
-) -> TokenPair:
+) -> TokenPair | MfaRequiredResponse:
     if await is_locked_out(redis, payload.email):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -180,6 +187,21 @@ async def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=INVALID_CREDENTIALS_DETAIL,
         )
+
+    if user.mfa_totp_enabled:
+        if payload.totp_code is None:
+            # Password was correct, but the caller must resubmit with a
+            # TOTP code — no failure recorded, since this isn't wrong
+            # credentials, and no tokens issued until MFA passes.
+            return MfaRequiredResponse()
+
+        try:
+            await verify_totp_login(db, user, payload.totp_code)
+        except TotpLoginVerificationError as exc:
+            await record_failure(redis, payload.email)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+            ) from exc
 
     await clear_failures(redis, payload.email)
 
