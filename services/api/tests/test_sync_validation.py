@@ -1,23 +1,16 @@
 import uuid
 
 import pytest
-from pydantic import BaseModel, ConfigDict
 
 from app.models import OpType
 from app.sync.registry import get_entity_schema, is_registered, register_entity_type
 from app.sync.validation import OpValidationError, validate_op_payload
-
-
-class _ExampleEntitySchema(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    weight_kg: float | None = None
-    note: str | None = None
+from tests.sync_support import SyncExampleItem, SyncExampleItemSchema
 
 
 def _register_example_entity() -> str:
     entity_type = f"example_entity_{uuid.uuid4().hex}"
-    register_entity_type(entity_type, _ExampleEntitySchema)
+    register_entity_type(entity_type, SyncExampleItemSchema, SyncExampleItem)
     return entity_type
 
 
@@ -25,14 +18,14 @@ def test_register_and_lookup_entity_type() -> None:
     entity_type = _register_example_entity()
 
     assert is_registered(entity_type) is True
-    assert get_entity_schema(entity_type) is _ExampleEntitySchema
+    assert get_entity_schema(entity_type) is SyncExampleItemSchema
 
 
 def test_register_rejects_duplicate_entity_type() -> None:
     entity_type = _register_example_entity()
 
     with pytest.raises(ValueError, match="already registered"):
-        register_entity_type(entity_type, _ExampleEntitySchema)
+        register_entity_type(entity_type, SyncExampleItemSchema, SyncExampleItem)
 
 
 def test_unregistered_entity_type_is_not_registered() -> None:

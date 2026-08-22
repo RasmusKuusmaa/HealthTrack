@@ -2,7 +2,6 @@ import uuid
 from datetime import UTC, datetime
 
 import pytest
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,18 +9,12 @@ from app.models import Operation, OpType, User
 from app.services.sync_ingestion import ingest_op
 from app.sync.registry import register_entity_type
 from app.sync.validation import OpValidationError
+from tests.sync_support import SyncExampleItem, SyncExampleItemSchema
 
 pytestmark = pytest.mark.asyncio
 
-
-class _ExampleEntitySchema(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    weight_kg: float | None = None
-
-
 ENTITY_TYPE = f"ingestion_example_{uuid.uuid4().hex}"
-register_entity_type(ENTITY_TYPE, _ExampleEntitySchema)
+register_entity_type(ENTITY_TYPE, SyncExampleItemSchema, SyncExampleItem)
 
 
 async def _make_user(db_session: AsyncSession, email: str) -> User:

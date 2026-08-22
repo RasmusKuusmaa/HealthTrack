@@ -1,6 +1,7 @@
 from app.models.audit_log import AuditLog
 from app.models.device import Device, DevicePlatform
 from app.models.email_verification_token import EmailVerificationToken
+from app.models.entity_field_version import EntityFieldVersion
 from app.models.mfa_recovery_code import MfaRecoveryCode
 from app.models.operation import Operation, OpType
 from app.models.password_reset_token import PasswordResetToken
@@ -22,4 +23,5 @@ __all__ = [
     "AuditLog",
     "Operation",
     "OpType",
+    "EntityFieldVersion",
 ]
