@@ -6,6 +6,16 @@ import '../../data/secure/token_store.dart';
 
 enum LoginOutcome { authenticated, mfaRequired }
 
+/// Carries the credentials from the login form across to the MFA challenge
+/// screen, since `POST /auth/login` needs email+password+totp_code (or
+/// recovery_code) together, not a separate "verify code" call.
+class PendingLoginCredentials {
+  const PendingLoginCredentials({required this.email, required this.password});
+
+  final String email;
+  final String password;
+}
+
 /// Talks to the `/auth/*` endpoints and persists the resulting tokens. Does
 /// not touch app-wide auth state (`isAuthenticatedProvider`) itself — the
 /// caller updates that after a successful call, keeping this class testable
@@ -85,5 +95,21 @@ class AuthRepository {
       refreshToken: body['refresh_token'] as String,
     );
     return LoginOutcome.authenticated;
+  }
+
+  /// Starts TOTP enrollment for the current (already authenticated) user,
+  /// returning the provisioning URI and QR code to show.
+  Future<TotpEnrollResponse> enrollTotp() async {
+    final response = await _authApi.mfaTotpEnrollAuthMfaTotpEnrollPost();
+    return response.data!;
+  }
+
+  /// Confirms enrollment with a code from the authenticator app, returning
+  /// the one-time-displayed recovery codes.
+  Future<List<String>> confirmTotp(String code) async {
+    final response = await _authApi.mfaTotpConfirmAuthMfaTotpConfirmPost(
+      totpConfirmRequest: TotpConfirmRequest(code: code),
+    );
+    return response.data!.recoveryCodes;
   }
 }

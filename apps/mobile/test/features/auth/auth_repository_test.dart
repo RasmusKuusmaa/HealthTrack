@@ -157,4 +157,39 @@ void main() {
     final body = jsonDecode(captured.data as String) as Map<String, dynamic>;
     expect(body['token'], 'verify-token');
   });
+
+  test('enrollTotp returns the provisioning URI and QR code', () async {
+    final repository = buildRepository({
+      '/auth/mfa/totp/enroll': (_) => _json(200, {
+        'provisioning_uri': 'otpauth://totp/HealthTrack:a@example.com',
+        'qr_code_png_base64': 'base64data',
+      }),
+    });
+
+    final enrollment = await repository.enrollTotp();
+
+    expect(
+      enrollment.provisioningUri,
+      'otpauth://totp/HealthTrack:a@example.com',
+    );
+    expect(enrollment.qrCodePngBase64, 'base64data');
+  });
+
+  test('confirmTotp posts the code and returns the recovery codes', () async {
+    late RequestOptions captured;
+    final repository = buildRepository({
+      '/auth/mfa/totp/confirm': (options) {
+        captured = options;
+        return _json(200, {
+          'recovery_codes': ['code-1', 'code-2'],
+        });
+      },
+    });
+
+    final codes = await repository.confirmTotp('123456');
+
+    expect(codes, ['code-1', 'code-2']);
+    final body = jsonDecode(captured.data as String) as Map<String, dynamic>;
+    expect(body['code'], '123456');
+  });
 }

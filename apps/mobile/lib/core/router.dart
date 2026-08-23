@@ -2,7 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/auth_repository.dart';
 import '../features/auth/login_screen.dart';
+import '../features/auth/mfa_challenge_screen.dart';
+import '../features/auth/mfa_enrollment_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/auth/verify_email_screen.dart';
 import '../ui/placeholder_screen.dart';
@@ -13,6 +16,7 @@ const loginPath = '/login';
 const registerPath = '/register';
 const verifyEmailPath = '/verify-email';
 const mfaChallengePath = '/mfa-challenge';
+const mfaEnrollmentPath = '/settings/mfa-enrollment';
 const homePath = '/home';
 const logPath = '/log';
 const progressPath = '/progress';
@@ -68,8 +72,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: mfaChallengePath,
-        builder: (context, state) =>
-            const PlaceholderScreen(title: "Verify it's you"),
+        builder: (context, state) {
+          final credentials = state.extra;
+          return credentials is PendingLoginCredentials
+              ? MfaChallengeScreen(credentials: credentials)
+              : const LoginScreen();
+        },
+      ),
+      GoRoute(
+        path: mfaEnrollmentPath,
+        builder: (context, state) => const MfaEnrollmentScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

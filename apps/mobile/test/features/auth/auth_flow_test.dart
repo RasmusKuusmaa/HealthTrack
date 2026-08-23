@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:healthtrack/core/auth/auth_state_provider.dart';
 import 'package:healthtrack/core/network/api_providers.dart';
 import 'package:healthtrack/core/router.dart';
 import 'package:healthtrack/data/secure/secure_key_value_store.dart';
@@ -132,7 +133,7 @@ void main() {
     expect(find.textContaining('Could not sign in'), findsOneWidget);
   });
 
-  testWidgets('a login requiring MFA navigates to the challenge placeholder', (
+  testWidgets('a login requiring MFA navigates to the challenge screen', (
     tester,
   ) async {
     await _pumpApp(
@@ -147,7 +148,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
     await tester.pumpAndSettle();
 
-    expect(find.text("Verify it's you — coming soon"), findsOneWidget);
+    expect(find.widgetWithText(AppBar, "Verify it's you"), findsOneWidget);
   });
 
   testWidgets(
@@ -253,4 +254,146 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('a valid MFA code after a challenge signs the user in', (
+    tester,
+  ) async {
+    var loginCalls = 0;
+    await _pumpApp(
+      tester,
+      _repositoryWith({
+        '/auth/login': (options) {
+          loginCalls++;
+          final body = options.data as Map<String, dynamic>;
+          if (loginCalls == 1) return _json(200, {'mfa_required': true});
+          expect(body['totp_code'], '123456');
+          return _json(200, {
+            'access_token': 'access-1',
+            'refresh_token': 'refresh-1',
+            'token_type': 'bearer',
+            'expires_in': 900,
+          });
+        },
+      }),
+    );
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'a@example.com');
+    await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField), '123456');
+    await tester.tap(find.widgetWithText(FilledButton, 'Verify'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Home — coming soon'), findsOneWidget);
+    expect(loginCalls, 2);
+  });
+
+  testWidgets('a rejected MFA code shows an error and stays on the challenge', (
+    tester,
+  ) async {
+    await _pumpApp(
+      tester,
+      _repositoryWith({
+        '/auth/login': (_) => _json(200, {'mfa_required': true}),
+      }),
+    );
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'a@example.com');
+    await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField), '000000');
+    await tester.tap(find.widgetWithText(FilledButton, 'Verify'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(AppBar, "Verify it's you"), findsOneWidget);
+    expect(find.textContaining('was not accepted'), findsOneWidget);
+  });
+
+  testWidgets(
+    'switching to a recovery code sends recovery_code instead of totp_code',
+    (tester) async {
+      await _pumpApp(
+        tester,
+        _repositoryWith({
+          '/auth/login': (options) {
+            final body = options.data as Map<String, dynamic>;
+            if (body.containsKey('recovery_code')) {
+              expect(body['recovery_code'], 'abc-def-ghi');
+              expect(body.containsKey('totp_code'), isFalse);
+              return _json(200, {
+                'access_token': 'access-1',
+                'refresh_token': 'refresh-1',
+                'token_type': 'bearer',
+                'expires_in': 900,
+              });
+            }
+            return _json(200, {'mfa_required': true});
+          },
+        }),
+      );
+
+      await tester.enterText(find.byType(TextFormField).at(0), 'a@example.com');
+      await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Use a recovery code instead'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField), 'abc-def-ghi');
+      await tester.tap(find.widgetWithText(FilledButton, 'Verify'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Home — coming soon'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'enrolling in MFA shows the QR code, confirms, and shows recovery codes',
+    (tester) async {
+      final repository = _repositoryWith({
+        '/auth/mfa/totp/enroll': (_) => _json(200, {
+          'provisioning_uri': 'otpauth://totp/HealthTrack:a@example.com',
+          // A minimal 1x1 transparent PNG, base64-encoded.
+          'qr_code_png_base64': 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+        }),
+        '/auth/mfa/totp/confirm': (_) => _json(200, {
+          'recovery_codes': ['code-1', 'code-2'],
+        }),
+      });
+      final container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWith((ref) async => repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(isAuthenticatedProvider.notifier).signIn();
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: container.read(appRouterProvider),
+          ),
+        ),
+      );
+      container.read(appRouterProvider).go(mfaEnrollmentPath);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Scan this QR code with your authenticator app.'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(find.byType(TextFormField), '123456');
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('code-1'), findsOneWidget);
+      expect(find.text('code-2'), findsOneWidget);
+    },
+  );
 }

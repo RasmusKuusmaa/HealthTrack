@@ -53,7 +53,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         case LoginOutcome.authenticated:
           ref.read(isAuthenticatedProvider.notifier).signIn();
         case LoginOutcome.mfaRequired:
-          context.go(mfaChallengePath);
+          context.push(
+            mfaChallengePath,
+            extra: PendingLoginCredentials(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            ),
+          );
       }
     } catch (_) {
       if (!mounted) return;
