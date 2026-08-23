@@ -36,13 +36,16 @@ void main() {
     expect(await tokenStore.readRefreshToken(), 'refresh-1');
   });
 
-  test('save overwrites a previously saved pair, e.g. after refresh rotation', () async {
-    await tokenStore.save(accessToken: 'access-1', refreshToken: 'refresh-1');
-    await tokenStore.save(accessToken: 'access-2', refreshToken: 'refresh-2');
+  test(
+    'save overwrites a previously saved pair, e.g. after refresh rotation',
+    () async {
+      await tokenStore.save(accessToken: 'access-1', refreshToken: 'refresh-1');
+      await tokenStore.save(accessToken: 'access-2', refreshToken: 'refresh-2');
 
-    expect(await tokenStore.readAccessToken(), 'access-2');
-    expect(await tokenStore.readRefreshToken(), 'refresh-2');
-  });
+      expect(await tokenStore.readAccessToken(), 'access-2');
+      expect(await tokenStore.readRefreshToken(), 'refresh-2');
+    },
+  );
 
   test('clear removes both tokens', () async {
     await tokenStore.save(accessToken: 'access-1', refreshToken: 'refresh-1');

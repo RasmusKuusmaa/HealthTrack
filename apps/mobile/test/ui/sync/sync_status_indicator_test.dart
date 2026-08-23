@@ -55,7 +55,9 @@ void main() {
     expect(find.byIcon(Icons.cloud_done), findsOneWidget);
   });
 
-  testWidgets('shows an error icon with the message in a tooltip', (tester) async {
+  testWidgets('shows an error icon with the message in a tooltip', (
+    tester,
+  ) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
@@ -66,7 +68,9 @@ void main() {
       ),
     );
 
-    container.read(syncStatusControllerProvider.notifier).markError('network unreachable');
+    container
+        .read(syncStatusControllerProvider.notifier)
+        .markError('network unreachable');
     await tester.pump();
 
     expect(find.byIcon(Icons.cloud_off), findsOneWidget);

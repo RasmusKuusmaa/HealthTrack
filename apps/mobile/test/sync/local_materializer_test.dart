@@ -10,7 +10,8 @@ import 'package:healthtrack/sync/local_materializer.dart';
 
 class _RecordedWrite {
   _RecordedWrite.upsert(this.entityId, this.fields) : deletedAt = null;
-  _RecordedWrite.delete(this.entityId, DateTime this.deletedAt) : fields = const {};
+  _RecordedWrite.delete(this.entityId, DateTime this.deletedAt)
+    : fields = const {};
 
   final String entityId;
   final Map<String, dynamic> fields;
@@ -32,7 +33,10 @@ class _FakeEntityMaterializer implements EntityMaterializer {
   }
 
   @override
-  Future<void> applyDelete({required String entityId, required DateTime deletedAt}) async {
+  Future<void> applyDelete({
+    required String entityId,
+    required DateTime deletedAt,
+  }) async {
     writes.add(_RecordedWrite.delete(entityId, deletedAt));
     projection.putIfAbsent(entityId, () => {})['deleted_at'] = deletedAt;
   }
@@ -87,7 +91,10 @@ void main() {
       clientTs: DateTime.utc(2026, 1, 1),
     ).copyWith(entityType: 'unknown_entity');
 
-    expect(() => materializer.materialize(op), throwsA(isA<MaterializationError>()));
+    expect(
+      () => materializer.materialize(op),
+      throwsA(isA<MaterializationError>()),
+    );
   });
 
   test('applies a create by upserting every payload field', () async {
@@ -104,28 +111,31 @@ void main() {
     expect(fake.projection['e1'], {'weight_kg': 80, 'note': 'morning'});
   });
 
-  test('a later client_ts wins over an earlier one for the same field', () async {
-    final earlier = _op(
-      clientOpId: 'op-1',
-      entityId: 'e1',
-      opType: OpType.create,
-      payload: const {'weight_kg': 80},
-      clientTs: DateTime.utc(2026, 1, 1, 8),
-    );
-    final later = _op(
-      clientOpId: 'op-2',
-      entityId: 'e1',
-      opType: OpType.update,
-      payload: const {'weight_kg': 79},
-      clientTs: DateTime.utc(2026, 1, 1, 9),
-    );
+  test(
+    'a later client_ts wins over an earlier one for the same field',
+    () async {
+      final earlier = _op(
+        clientOpId: 'op-1',
+        entityId: 'e1',
+        opType: OpType.create,
+        payload: const {'weight_kg': 80},
+        clientTs: DateTime.utc(2026, 1, 1, 8),
+      );
+      final later = _op(
+        clientOpId: 'op-2',
+        entityId: 'e1',
+        opType: OpType.update,
+        payload: const {'weight_kg': 79},
+        clientTs: DateTime.utc(2026, 1, 1, 9),
+      );
 
-    // Applied out of order — later op materialized first.
-    await materializer.materialize(later);
-    await materializer.materialize(earlier);
+      // Applied out of order — later op materialized first.
+      await materializer.materialize(later);
+      await materializer.materialize(earlier);
 
-    expect(fake.projection['e1'], {'weight_kg': 79});
-  });
+      expect(fake.projection['e1'], {'weight_kg': 79});
+    },
+  );
 
   test('on a client_ts tie, the higher server_seq wins', () async {
     final sameTs = DateTime.utc(2026, 1, 1);
@@ -178,19 +188,22 @@ void main() {
     expect(fake.projection['e1'], {'weight_kg': 79});
   });
 
-  test('delete applies a tombstone via applyDelete, not a hard delete', () async {
-    final deletedAt = DateTime.utc(2026, 1, 2);
-    final op = _op(
-      clientOpId: 'op-1',
-      entityId: 'e1',
-      opType: OpType.delete,
-      payload: const {},
-      clientTs: DateTime.utc(2026, 1, 1),
-      serverTs: deletedAt,
-    );
+  test(
+    'delete applies a tombstone via applyDelete, not a hard delete',
+    () async {
+      final deletedAt = DateTime.utc(2026, 1, 2);
+      final op = _op(
+        clientOpId: 'op-1',
+        entityId: 'e1',
+        opType: OpType.delete,
+        payload: const {},
+        clientTs: DateTime.utc(2026, 1, 1),
+        serverTs: deletedAt,
+      );
 
-    await materializer.materialize(op);
+      await materializer.materialize(op);
 
-    expect(fake.writes.single.deletedAt, deletedAt);
-  });
+      expect(fake.writes.single.deletedAt, deletedAt);
+    },
+  );
 }

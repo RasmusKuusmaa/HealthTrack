@@ -6,7 +6,11 @@ void main() {
     final scale = AppTypography.textTheme;
     final tracks = {
       'display': [scale.displayLarge, scale.displayMedium, scale.displaySmall],
-      'headline': [scale.headlineLarge, scale.headlineMedium, scale.headlineSmall],
+      'headline': [
+        scale.headlineLarge,
+        scale.headlineMedium,
+        scale.headlineSmall,
+      ],
       'title': [scale.titleLarge, scale.titleMedium, scale.titleSmall],
       'body': [scale.bodyLarge, scale.bodyMedium, scale.bodySmall],
       'label': [scale.labelLarge, scale.labelMedium, scale.labelSmall],

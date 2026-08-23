@@ -5,7 +5,9 @@ import 'package:healthtrack/ui/widgets/app_card.dart';
 void main() {
   testWidgets('renders its child', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: AppCard(child: Text('content')))),
+      const MaterialApp(
+        home: Scaffold(body: AppCard(child: Text('content'))),
+      ),
     );
 
     expect(find.text('content'), findsOneWidget);
@@ -16,7 +18,10 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: AppCard(onTap: () => tapped = true, child: const Text('content')),
+          body: AppCard(
+            onTap: () => tapped = true,
+            child: const Text('content'),
+          ),
         ),
       ),
     );
@@ -27,7 +32,9 @@ void main() {
 
   testWidgets('is not tappable when onTap is null', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: AppCard(child: Text('content')))),
+      const MaterialApp(
+        home: Scaffold(body: AppCard(child: Text('content'))),
+      ),
     );
 
     final inkWell = tester.widget<InkWell>(find.byType(InkWell));

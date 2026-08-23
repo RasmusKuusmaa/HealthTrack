@@ -35,46 +35,51 @@ ResponseBody _jsonResponse(int statusCode, Map<String, dynamic> body) {
 }
 
 void main() {
-  test('push posts the batch and returns the assigned server_seq values', () async {
-    late RequestOptions capturedOptions;
-    late Map<String, dynamic> capturedBody;
+  test(
+    'push posts the batch and returns the assigned server_seq values',
+    () async {
+      late RequestOptions capturedOptions;
+      late Map<String, dynamic> capturedBody;
 
-    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
-      ..httpClientAdapter = _FakeAdapter((options) {
-        capturedOptions = options;
-        capturedBody = options.data as Map<String, dynamic>;
-        return _jsonResponse(200, {
-          'results': [
-            {'client_op_id': 'op-1', 'server_seq': 7},
-          ],
+      final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
+        ..httpClientAdapter = _FakeAdapter((options) {
+          capturedOptions = options;
+          capturedBody = options.data as Map<String, dynamic>;
+          return _jsonResponse(200, {
+            'results': [
+              {'client_op_id': 'op-1', 'server_seq': 7},
+            ],
+          });
         });
-      });
 
-    final api = DioSyncApi(dio);
-    final results = await api.push([
-      PushOpRequest(
-        clientOpId: 'op-1',
-        entityType: 'weight_entry',
-        entityId: 'e1',
-        opType: 'create',
-        payload: const {'weight_kg': 80},
-        deviceId: 'device-1',
-        clientTs: DateTime.utc(2026, 1, 1),
-      ),
-    ]);
+      final api = DioSyncApi(dio);
+      final results = await api.push([
+        PushOpRequest(
+          clientOpId: 'op-1',
+          entityType: 'weight_entry',
+          entityId: 'e1',
+          opType: 'create',
+          payload: const {'weight_kg': 80},
+          deviceId: 'device-1',
+          clientTs: DateTime.utc(2026, 1, 1),
+        ),
+      ]);
 
-    expect(capturedOptions.method, 'POST');
-    expect(capturedOptions.path, '/sync/push');
-    expect(capturedBody['ops'], hasLength(1));
-    expect(capturedBody['ops'][0]['client_op_id'], 'op-1');
-    expect(results, [isA<PushOpResult>()]);
-    expect(results.single.clientOpId, 'op-1');
-    expect(results.single.serverSeq, 7);
-  });
+      expect(capturedOptions.method, 'POST');
+      expect(capturedOptions.path, '/sync/push');
+      expect(capturedBody['ops'], hasLength(1));
+      expect(capturedBody['ops'][0]['client_op_id'], 'op-1');
+      expect(results, [isA<PushOpResult>()]);
+      expect(results.single.clientOpId, 'op-1');
+      expect(results.single.serverSeq, 7);
+    },
+  );
 
   test('push wraps a failed request in a SyncApiException', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
-      ..httpClientAdapter = _FakeAdapter((options) => _jsonResponse(500, {'detail': 'boom'}));
+      ..httpClientAdapter = _FakeAdapter(
+        (options) => _jsonResponse(500, {'detail': 'boom'}),
+      );
 
     final api = DioSyncApi(dio);
 
@@ -131,13 +136,12 @@ void main() {
 
   test('pull wraps a failed request in a SyncApiException', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
-      ..httpClientAdapter = _FakeAdapter((options) => _jsonResponse(500, {'detail': 'boom'}));
+      ..httpClientAdapter = _FakeAdapter(
+        (options) => _jsonResponse(500, {'detail': 'boom'}),
+      );
 
     final api = DioSyncApi(dio);
 
-    await expectLater(
-      api.pull(since: 0),
-      throwsA(isA<SyncApiException>()),
-    );
+    await expectLater(api.pull(since: 0), throwsA(isA<SyncApiException>()));
   });
 }

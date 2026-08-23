@@ -5,7 +5,9 @@ import 'package:healthtrack/ui/widgets/app_section_header.dart';
 void main() {
   testWidgets('shows the title', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: AppSectionHeader(title: 'Recent workouts'))),
+      const MaterialApp(
+        home: Scaffold(body: AppSectionHeader(title: 'Recent workouts')),
+      ),
     );
 
     expect(find.text('Recent workouts'), findsOneWidget);
@@ -28,7 +30,9 @@ void main() {
 
   testWidgets('shows no trailing widget by default', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: AppSectionHeader(title: 'Recent workouts'))),
+      const MaterialApp(
+        home: Scaffold(body: AppSectionHeader(title: 'Recent workouts')),
+      ),
     );
 
     final row = tester.widget<Row>(find.byType(Row));

@@ -15,7 +15,10 @@ class TokenStore {
 
   Future<String?> readRefreshToken() => _storage.read(_refreshTokenKey);
 
-  Future<void> save({required String accessToken, required String refreshToken}) async {
+  Future<void> save({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
     await _storage.write(_accessTokenKey, accessToken);
     await _storage.write(_refreshTokenKey, refreshToken);
   }

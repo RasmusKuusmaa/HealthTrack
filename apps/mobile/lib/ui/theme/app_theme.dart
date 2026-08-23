@@ -17,7 +17,10 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      colorScheme: ColorScheme.fromSeed(seedColor: _seedColor, brightness: brightness),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: _seedColor,
+        brightness: brightness,
+      ),
       textTheme: AppTypography.textTheme,
     );
   }

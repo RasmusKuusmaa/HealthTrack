@@ -13,7 +13,11 @@ void main() {
     ];
 
     for (final value in values) {
-      expect(value % 4, 0, reason: '$value is not a multiple of the 4px base unit.');
+      expect(
+        value % 4,
+        0,
+        reason: '$value is not a multiple of the 4px base unit.',
+      );
     }
 
     for (var i = 1; i < values.length; i++) {

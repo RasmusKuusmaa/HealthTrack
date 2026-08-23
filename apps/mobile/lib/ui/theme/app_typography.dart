@@ -7,13 +7,41 @@ import 'package:flutter/material.dart';
 /// single, readable source of truth screens can be checked against.
 abstract final class AppTypography {
   static const TextTheme textTheme = TextTheme(
-    displayLarge: TextStyle(fontSize: 57, height: 1.12, fontWeight: FontWeight.w400),
-    displayMedium: TextStyle(fontSize: 45, height: 1.16, fontWeight: FontWeight.w400),
-    displaySmall: TextStyle(fontSize: 36, height: 1.22, fontWeight: FontWeight.w400),
-    headlineLarge: TextStyle(fontSize: 32, height: 1.25, fontWeight: FontWeight.w600),
-    headlineMedium: TextStyle(fontSize: 28, height: 1.29, fontWeight: FontWeight.w600),
-    headlineSmall: TextStyle(fontSize: 24, height: 1.33, fontWeight: FontWeight.w600),
-    titleLarge: TextStyle(fontSize: 22, height: 1.27, fontWeight: FontWeight.w600),
+    displayLarge: TextStyle(
+      fontSize: 57,
+      height: 1.12,
+      fontWeight: FontWeight.w400,
+    ),
+    displayMedium: TextStyle(
+      fontSize: 45,
+      height: 1.16,
+      fontWeight: FontWeight.w400,
+    ),
+    displaySmall: TextStyle(
+      fontSize: 36,
+      height: 1.22,
+      fontWeight: FontWeight.w400,
+    ),
+    headlineLarge: TextStyle(
+      fontSize: 32,
+      height: 1.25,
+      fontWeight: FontWeight.w600,
+    ),
+    headlineMedium: TextStyle(
+      fontSize: 28,
+      height: 1.29,
+      fontWeight: FontWeight.w600,
+    ),
+    headlineSmall: TextStyle(
+      fontSize: 24,
+      height: 1.33,
+      fontWeight: FontWeight.w600,
+    ),
+    titleLarge: TextStyle(
+      fontSize: 22,
+      height: 1.27,
+      fontWeight: FontWeight.w600,
+    ),
     titleMedium: TextStyle(
       fontSize: 16,
       height: 1.5,

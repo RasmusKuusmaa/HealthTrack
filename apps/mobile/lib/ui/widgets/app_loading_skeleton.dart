@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 /// A pulsing placeholder rectangle standing in for content that's still
 /// loading (a list row, a chart, a card body).
 class AppLoadingSkeleton extends StatefulWidget {
-  const AppLoadingSkeleton({this.width, this.height = 16, this.borderRadius = 8, super.key});
+  const AppLoadingSkeleton({
+    this.width,
+    this.height = 16,
+    this.borderRadius = 8,
+    super.key,
+  });
 
   final double? width;
   final double height;

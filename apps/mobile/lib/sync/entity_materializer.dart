@@ -12,5 +12,8 @@ abstract class EntityMaterializer {
   });
 
   /// Applies a tombstone delete. Never hard-deletes the row.
-  Future<void> applyDelete({required String entityId, required DateTime deletedAt});
+  Future<void> applyDelete({
+    required String entityId,
+    required DateTime deletedAt,
+  });
 }

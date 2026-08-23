@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:healthtrack/ui/widgets/app_primary_button.dart';
 
 void main() {
-  testWidgets('shows the label and calls onPressed when tapped', (tester) async {
+  testWidgets('shows the label and calls onPressed when tapped', (
+    tester,
+  ) async {
     var tapped = false;
     await tester.pumpWidget(
       MaterialApp(
@@ -18,7 +20,9 @@ void main() {
     expect(tapped, isTrue);
   });
 
-  testWidgets('shows a spinner and disables the button while loading', (tester) async {
+  testWidgets('shows a spinner and disables the button while loading', (
+    tester,
+  ) async {
     var tapped = false;
     await tester.pumpWidget(
       MaterialApp(

@@ -78,14 +78,14 @@ class SyncEngine {
     );
 
     for (final result in results) {
-      await (_db.update(_db.operations)
-            ..where((t) => t.clientOpId.equals(result.clientOpId)))
-          .write(
-            OperationsCompanion(
-              serverSeq: Value(result.serverSeq),
-              synced: const Value(true),
-            ),
-          );
+      await (_db.update(
+        _db.operations,
+      )..where((t) => t.clientOpId.equals(result.clientOpId))).write(
+        OperationsCompanion(
+          serverSeq: Value(result.serverSeq),
+          synced: const Value(true),
+        ),
+      );
     }
   }
 
@@ -114,7 +114,9 @@ class SyncEngine {
           synced: true,
         );
 
-        await _db.into(_db.operations).insertOnConflictUpdate(op.toCompanion(true));
+        await _db
+            .into(_db.operations)
+            .insertOnConflictUpdate(op.toCompanion(true));
         await _materializer.materialize(op);
       }
 

@@ -37,8 +37,12 @@ class _FakeEntityMaterializer implements EntityMaterializer {
   }
 
   @override
-  Future<void> applyDelete({required String entityId, required DateTime deletedAt}) async {
-    projection.putIfAbsent(entityId, () => {})['deleted_at'] = deletedAt.toIso8601String();
+  Future<void> applyDelete({
+    required String entityId,
+    required DateTime deletedAt,
+  }) async {
+    projection.putIfAbsent(entityId, () => {})['deleted_at'] = deletedAt
+        .toIso8601String();
   }
 }
 
@@ -101,26 +105,31 @@ void main() {
       expect(api.lastPushed, isNull);
     });
 
-    test('sends unsynced ops and marks them synced with the returned server_seq', () async {
-      final clientOpId = await opWriter.write(
-        entityType: 'weight_entry',
-        entityId: 'e1',
-        opType: OpType.create,
-        payload: '{"weight_kg": 80}',
-      );
-      api.onPush = (ops) => [PushOpResult(clientOpId: clientOpId, serverSeq: 42)];
+    test(
+      'sends unsynced ops and marks them synced with the returned server_seq',
+      () async {
+        final clientOpId = await opWriter.write(
+          entityType: 'weight_entry',
+          entityId: 'e1',
+          opType: OpType.create,
+          payload: '{"weight_kg": 80}',
+        );
+        api.onPush = (ops) => [
+          PushOpResult(clientOpId: clientOpId, serverSeq: 42),
+        ];
 
-      await engine.push();
+        await engine.push();
 
-      expect(api.lastPushed, hasLength(1));
-      expect(api.lastPushed!.single.clientOpId, clientOpId);
+        expect(api.lastPushed, hasLength(1));
+        expect(api.lastPushed!.single.clientOpId, clientOpId);
 
-      final row = await (db.select(
-        db.operations,
-      )..where((t) => t.clientOpId.equals(clientOpId))).getSingle();
-      expect(row.synced, isTrue);
-      expect(row.serverSeq, 42);
-    });
+        final row = await (db.select(
+          db.operations,
+        )..where((t) => t.clientOpId.equals(clientOpId))).getSingle();
+        expect(row.synced, isTrue);
+        expect(row.serverSeq, 42);
+      },
+    );
 
     test('does not resend an already-synced op', () async {
       final clientOpId = await opWriter.write(
@@ -129,7 +138,9 @@ void main() {
         opType: OpType.create,
         payload: '{}',
       );
-      api.onPush = (ops) => [PushOpResult(clientOpId: clientOpId, serverSeq: 1)];
+      api.onPush = (ops) => [
+        PushOpResult(clientOpId: clientOpId, serverSeq: 1),
+      ];
       await engine.push();
 
       api.lastPushed = null;

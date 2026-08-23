@@ -50,9 +50,6 @@ void main() {
 
     await db.into(db.operations).insert(companion);
 
-    expect(
-      () => db.into(db.operations).insert(companion),
-      throwsA(anything),
-    );
+    expect(() => db.into(db.operations).insert(companion), throwsA(anything));
   });
 }

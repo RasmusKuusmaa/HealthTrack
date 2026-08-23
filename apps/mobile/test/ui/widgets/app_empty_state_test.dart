@@ -14,7 +14,9 @@ void main() {
     expect(find.byIcon(Icons.inbox_outlined), findsOneWidget);
   });
 
-  testWidgets('shows a custom icon and an action when provided', (tester) async {
+  testWidgets('shows a custom icon and an action when provided', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(

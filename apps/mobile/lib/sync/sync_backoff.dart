@@ -24,7 +24,8 @@ class SyncBackoff {
     final exponential = baseDelay * scale;
     final capped = exponential > maxDelay ? maxDelay : exponential;
     final random = _random ?? Random();
-    final jitteredMicros = (random.nextDouble() * capped.inMicroseconds).round();
+    final jitteredMicros = (random.nextDouble() * capped.inMicroseconds)
+        .round();
     return Duration(microseconds: jitteredMicros);
   }
 }

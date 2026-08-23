@@ -27,8 +27,15 @@ class AppEmptyState extends StatelessWidget {
           children: [
             Icon(icon, size: 48, color: theme.colorScheme.outline),
             const SizedBox(height: AppSpacing.md),
-            Text(message, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
-            if (action != null) ...[const SizedBox(height: AppSpacing.md), action!],
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium,
+            ),
+            if (action != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              action!,
+            ],
           ],
         ),
       ),

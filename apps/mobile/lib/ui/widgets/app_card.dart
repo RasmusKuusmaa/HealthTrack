@@ -16,7 +16,10 @@ class AppCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Padding(padding: const EdgeInsets.all(AppSpacing.md), child: child),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: child,
+        ),
       ),
     );
   }

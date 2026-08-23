@@ -13,16 +13,19 @@ class SyncTriggerController with WidgetsBindingObserver {
     required Future<void> Function() onTrigger,
     Duration periodicInterval = const Duration(minutes: 15),
     Stream<List<ConnectivityResult>>? connectivityStream,
-    Timer Function(Duration period, void Function(Timer timer) callback)? timerFactory,
+    Timer Function(Duration period, void Function(Timer timer) callback)?
+    timerFactory,
   }) : _onTrigger = onTrigger,
        _periodicInterval = periodicInterval,
-       _connectivityStream = connectivityStream ?? Connectivity().onConnectivityChanged,
+       _connectivityStream =
+           connectivityStream ?? Connectivity().onConnectivityChanged,
        _timerFactory = timerFactory ?? Timer.periodic;
 
   final Future<void> Function() _onTrigger;
   final Duration _periodicInterval;
   final Stream<List<ConnectivityResult>> _connectivityStream;
-  final Timer Function(Duration period, void Function(Timer timer) callback) _timerFactory;
+  final Timer Function(Duration period, void Function(Timer timer) callback)
+  _timerFactory;
 
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   Timer? _periodicTimer;
@@ -30,7 +33,9 @@ class SyncTriggerController with WidgetsBindingObserver {
 
   void start() {
     WidgetsBinding.instance.addObserver(this);
-    _connectivitySubscription = _connectivityStream.listen(handleConnectivityChange);
+    _connectivitySubscription = _connectivityStream.listen(
+      handleConnectivityChange,
+    );
     _periodicTimer = _timerFactory(_periodicInterval, (_) => _fire());
   }
 

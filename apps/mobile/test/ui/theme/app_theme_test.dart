@@ -13,13 +13,25 @@ void main() {
     // ColorScheme.fromSeed derives every role from the seed's hue, so the
     // two brightness variants should agree on the seed's own primary hue
     // family even though the exact shades differ.
-    expect(AppTheme.light.colorScheme.primary, isNot(AppTheme.dark.colorScheme.primary));
-    expect(HSLColor.fromColor(AppTheme.light.colorScheme.primary).hue, closeTo(HSLColor.fromColor(AppTheme.dark.colorScheme.primary).hue, 15));
+    expect(
+      AppTheme.light.colorScheme.primary,
+      isNot(AppTheme.dark.colorScheme.primary),
+    );
+    expect(
+      HSLColor.fromColor(AppTheme.light.colorScheme.primary).hue,
+      closeTo(HSLColor.fromColor(AppTheme.dark.colorScheme.primary).hue, 15),
+    );
   });
 
   test('both themes use the shared type scale', () {
-    expect(AppTheme.light.textTheme.bodyMedium?.fontSize, AppTypography.textTheme.bodyMedium?.fontSize);
-    expect(AppTheme.dark.textTheme.bodyMedium?.fontSize, AppTypography.textTheme.bodyMedium?.fontSize);
+    expect(
+      AppTheme.light.textTheme.bodyMedium?.fontSize,
+      AppTypography.textTheme.bodyMedium?.fontSize,
+    );
+    expect(
+      AppTheme.dark.textTheme.bodyMedium?.fontSize,
+      AppTypography.textTheme.bodyMedium?.fontSize,
+    );
   });
 
   test('Material 3 is enabled', () {

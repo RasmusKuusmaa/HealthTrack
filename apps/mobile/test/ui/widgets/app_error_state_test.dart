@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:healthtrack/ui/widgets/app_error_state.dart';
 
 void main() {
-  testWidgets('shows the message and no retry button by default', (tester) async {
+  testWidgets('shows the message and no retry button by default', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(body: AppErrorState(message: 'Something went wrong')),
@@ -14,7 +16,9 @@ void main() {
     expect(find.text('Retry'), findsNothing);
   });
 
-  testWidgets('shows a retry button that calls onRetry when tapped', (tester) async {
+  testWidgets('shows a retry button that calls onRetry when tapped', (
+    tester,
+  ) async {
     var retried = false;
     await tester.pumpWidget(
       MaterialApp(

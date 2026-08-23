@@ -13,5 +13,6 @@ class EntityRegistry {
     _materializers[entityType] = materializer;
   }
 
-  EntityMaterializer? operator [](String entityType) => _materializers[entityType];
+  EntityMaterializer? operator [](String entityType) =>
+      _materializers[entityType];
 }

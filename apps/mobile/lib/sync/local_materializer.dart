@@ -44,7 +44,10 @@ class LocalMaterializer {
         final deletedAt = op.serverTs ?? op.clientTs;
         final resolved = await _resolveFields(op, {'deleted_at': deletedAt});
         if (resolved.containsKey('deleted_at')) {
-          await materializer.applyDelete(entityId: op.entityId, deletedAt: deletedAt);
+          await materializer.applyDelete(
+            entityId: op.entityId,
+            deletedAt: deletedAt,
+          );
         }
         return;
       }
@@ -79,7 +82,9 @@ class LocalMaterializer {
 
   Future<bool> _fieldWins(Operation op, String fieldName) async {
     final query = _db.select(_db.entityFieldVersions)
-      ..where((t) => t.entityId.equals(op.entityId) & t.fieldName.equals(fieldName));
+      ..where(
+        (t) => t.entityId.equals(op.entityId) & t.fieldName.equals(fieldName),
+      );
     final current = await query.getSingleOrNull();
 
     if (current != null && !_opWins(op, current)) {

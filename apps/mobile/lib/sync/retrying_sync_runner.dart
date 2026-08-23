@@ -8,7 +8,8 @@ class SyncRetryExhausted implements Exception {
   final Object lastError;
 
   @override
-  String toString() => 'SyncRetryExhausted after $attempts attempt(s): $lastError';
+  String toString() =>
+      'SyncRetryExhausted after $attempts attempt(s): $lastError';
 }
 
 /// Retries a sync action with exponential backoff and jitter, giving up

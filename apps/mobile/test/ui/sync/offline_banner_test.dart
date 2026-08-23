@@ -21,7 +21,9 @@ void main() {
   testWidgets('shows the offline message while offline', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [isOnlineProvider.overrideWith((ref) => Stream.value(false))],
+        overrides: [
+          isOnlineProvider.overrideWith((ref) => Stream.value(false)),
+        ],
         child: const MaterialApp(home: Scaffold(body: OfflineBanner())),
       ),
     );
@@ -31,7 +33,9 @@ void main() {
     expect(find.textContaining('Offline'), findsOneWidget);
   });
 
-  testWidgets('shows nothing while connectivity is still loading', (tester) async {
+  testWidgets('shows nothing while connectivity is still loading', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

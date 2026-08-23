@@ -10,7 +10,10 @@ class TokenPair {
   final String refreshToken;
 }
 
-typedef RefreshTokens = Future<TokenPair?> Function(String refreshToken, String deviceId);
+typedef RefreshTokens = Future<TokenPair?> Function(
+  String refreshToken,
+  String deviceId,
+);
 
 /// Attaches the stored access token to every request and, on a 401,
 /// refreshes it exactly once via [refreshTokens] and retries the original
@@ -52,7 +55,10 @@ class AuthInterceptor extends Interceptor {
   }
 
   @override
-  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
     final isUnauthorized = err.response?.statusCode == 401;
     final alreadyRetried = err.requestOptions.extra['authRetried'] == true;
 

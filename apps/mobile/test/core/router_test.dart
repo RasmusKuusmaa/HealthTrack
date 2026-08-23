@@ -5,14 +5,18 @@ import 'package:healthtrack/core/auth/auth_state_provider.dart';
 import 'package:healthtrack/core/router.dart';
 
 void main() {
-  testWidgets('redirects an unauthenticated user to the sign-in screen', (tester) async {
+  testWidgets('redirects an unauthenticated user to the sign-in screen', (
+    tester,
+  ) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: container.read(appRouterProvider)),
+        child: MaterialApp.router(
+          routerConfig: container.read(appRouterProvider),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -21,7 +25,9 @@ void main() {
     expect(find.text('Home'), findsNothing);
   });
 
-  testWidgets('an authenticated user lands on Home with a bottom nav bar', (tester) async {
+  testWidgets('an authenticated user lands on Home with a bottom nav bar', (
+    tester,
+  ) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     container.read(isAuthenticatedProvider.notifier).signIn();
@@ -29,7 +35,9 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: container.read(appRouterProvider)),
+        child: MaterialApp.router(
+          routerConfig: container.read(appRouterProvider),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -39,14 +47,18 @@ void main() {
     expect(find.byType(NavigationDestination), findsNWidgets(4));
   });
 
-  testWidgets('signing in from the login screen redirects into the shell', (tester) async {
+  testWidgets('signing in from the login screen redirects into the shell', (
+    tester,
+  ) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: container.read(appRouterProvider)),
+        child: MaterialApp.router(
+          routerConfig: container.read(appRouterProvider),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -58,7 +70,9 @@ void main() {
     expect(find.text('Home — coming soon'), findsOneWidget);
   });
 
-  testWidgets('tapping a bottom nav destination switches branches', (tester) async {
+  testWidgets('tapping a bottom nav destination switches branches', (
+    tester,
+  ) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     container.read(isAuthenticatedProvider.notifier).signIn();
@@ -66,7 +80,9 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: container.read(appRouterProvider)),
+        child: MaterialApp.router(
+          routerConfig: container.read(appRouterProvider),
+        ),
       ),
     );
     await tester.pumpAndSettle();

@@ -49,7 +49,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: homePath,
-                builder: (context, state) => const PlaceholderScreen(title: 'Home'),
+                builder: (context, state) =>
+                    const PlaceholderScreen(title: 'Home'),
               ),
             ],
           ),
@@ -57,7 +58,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: logPath,
-                builder: (context, state) => const PlaceholderScreen(title: 'Log'),
+                builder: (context, state) =>
+                    const PlaceholderScreen(title: 'Log'),
               ),
             ],
           ),
@@ -65,7 +67,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: progressPath,
-                builder: (context, state) => const PlaceholderScreen(title: 'Progress'),
+                builder: (context, state) =>
+                    const PlaceholderScreen(title: 'Progress'),
               ),
             ],
           ),
@@ -73,7 +76,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: settingsPath,
-                builder: (context, state) => const PlaceholderScreen(title: 'Settings'),
+                builder: (context, state) =>
+                    const PlaceholderScreen(title: 'Settings'),
               ),
             ],
           ),

@@ -81,36 +81,43 @@ void main() {
     expect(adapter.authHeaders.single, 'Bearer access-1');
   });
 
-  test('refreshes once on a 401 and retries with the new access token', () async {
-    final storage = _FakeSecureKeyValueStore();
-    final tokenStore = TokenStore(storage);
-    await tokenStore.save(accessToken: 'expired', refreshToken: 'refresh-1');
-    final adapter = _ScriptedAdapter(failUntilCall: 1);
-    var refreshCalls = 0;
+  test(
+    'refreshes once on a 401 and retries with the new access token',
+    () async {
+      final storage = _FakeSecureKeyValueStore();
+      final tokenStore = TokenStore(storage);
+      await tokenStore.save(accessToken: 'expired', refreshToken: 'refresh-1');
+      final adapter = _ScriptedAdapter(failUntilCall: 1);
+      var refreshCalls = 0;
 
-    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))..httpClientAdapter = adapter;
-    dio.interceptors.add(
-      AuthInterceptor(
-        dio: dio,
-        tokenStore: tokenStore,
-        deviceId: 'device-1',
-        refreshTokens: (refreshToken, deviceId) async {
-          refreshCalls++;
-          expect(refreshToken, 'refresh-1');
-          expect(deviceId, 'device-1');
-          return const TokenPair(accessToken: 'new-access', refreshToken: 'new-refresh');
-        },
-      ),
-    );
+      final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
+        ..httpClientAdapter = adapter;
+      dio.interceptors.add(
+        AuthInterceptor(
+          dio: dio,
+          tokenStore: tokenStore,
+          deviceId: 'device-1',
+          refreshTokens: (refreshToken, deviceId) async {
+            refreshCalls++;
+            expect(refreshToken, 'refresh-1');
+            expect(deviceId, 'device-1');
+            return const TokenPair(
+              accessToken: 'new-access',
+              refreshToken: 'new-refresh',
+            );
+          },
+        ),
+      );
 
-    final response = await dio.get<dynamic>('/protected');
+      final response = await dio.get<dynamic>('/protected');
 
-    expect(response.statusCode, 200);
-    expect(refreshCalls, 1);
-    expect(await tokenStore.readAccessToken(), 'new-access');
-    expect(await tokenStore.readRefreshToken(), 'new-refresh');
-    expect(adapter.authHeaders.last, 'Bearer new-access');
-  });
+      expect(response.statusCode, 200);
+      expect(refreshCalls, 1);
+      expect(await tokenStore.readAccessToken(), 'new-access');
+      expect(await tokenStore.readRefreshToken(), 'new-refresh');
+      expect(adapter.authHeaders.last, 'Bearer new-access');
+    },
+  );
 
   test('clears tokens and reports failure when refresh itself fails', () async {
     final storage = _FakeSecureKeyValueStore();
@@ -119,7 +126,8 @@ void main() {
     final adapter = _ScriptedAdapter(failUntilCall: 999);
     var signedOut = false;
 
-    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))..httpClientAdapter = adapter;
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
+      ..httpClientAdapter = adapter;
     dio.interceptors.add(
       AuthInterceptor(
         dio: dio,
@@ -130,39 +138,52 @@ void main() {
       ),
     );
 
-    await expectLater(dio.get<void>('/protected'), throwsA(isA<DioException>()));
+    await expectLater(
+      dio.get<void>('/protected'),
+      throwsA(isA<DioException>()),
+    );
 
     expect(signedOut, isTrue);
     expect(await tokenStore.readAccessToken(), isNull);
     expect(await tokenStore.readRefreshToken(), isNull);
   });
 
-  test('does not retry a second time if the retried request also 401s', () async {
-    final storage = _FakeSecureKeyValueStore();
-    final tokenStore = TokenStore(storage);
-    await tokenStore.save(accessToken: 'expired', refreshToken: 'refresh-1');
-    final adapter = _ScriptedAdapter(failUntilCall: 999);
-    var refreshCalls = 0;
+  test(
+    'does not retry a second time if the retried request also 401s',
+    () async {
+      final storage = _FakeSecureKeyValueStore();
+      final tokenStore = TokenStore(storage);
+      await tokenStore.save(accessToken: 'expired', refreshToken: 'refresh-1');
+      final adapter = _ScriptedAdapter(failUntilCall: 999);
+      var refreshCalls = 0;
 
-    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))..httpClientAdapter = adapter;
-    dio.interceptors.add(
-      AuthInterceptor(
-        dio: dio,
-        tokenStore: tokenStore,
-        deviceId: 'device-1',
-        refreshTokens: (refreshToken, deviceId) async {
-          refreshCalls++;
-          return const TokenPair(accessToken: 'still-bad', refreshToken: 'still-bad-r');
-        },
-      ),
-    );
+      final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
+        ..httpClientAdapter = adapter;
+      dio.interceptors.add(
+        AuthInterceptor(
+          dio: dio,
+          tokenStore: tokenStore,
+          deviceId: 'device-1',
+          refreshTokens: (refreshToken, deviceId) async {
+            refreshCalls++;
+            return const TokenPair(
+              accessToken: 'still-bad',
+              refreshToken: 'still-bad-r',
+            );
+          },
+        ),
+      );
 
-    await expectLater(dio.get<void>('/protected'), throwsA(isA<DioException>()));
+      await expectLater(
+        dio.get<void>('/protected'),
+        throwsA(isA<DioException>()),
+      );
 
-    expect(refreshCalls, 1);
-    // Original attempt + the single retry, nothing more.
-    expect(adapter.callCount, 2);
-  });
+      expect(refreshCalls, 1);
+      // Original attempt + the single retry, nothing more.
+      expect(adapter.callCount, 2);
+    },
+  );
 
   test('coalesces concurrent 401s into a single refresh call', () async {
     final storage = _FakeSecureKeyValueStore();
@@ -171,7 +192,8 @@ void main() {
     final adapter = _ScriptedAdapter(failUntilCall: 2);
     var refreshCalls = 0;
 
-    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))..httpClientAdapter = adapter;
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
+      ..httpClientAdapter = adapter;
     dio.interceptors.add(
       AuthInterceptor(
         dio: dio,
@@ -180,7 +202,10 @@ void main() {
         refreshTokens: (refreshToken, deviceId) async {
           refreshCalls++;
           await Future<void>.delayed(const Duration(milliseconds: 10));
-          return const TokenPair(accessToken: 'new-access', refreshToken: 'new-refresh');
+          return const TokenPair(
+            accessToken: 'new-access',
+            refreshToken: 'new-refresh',
+          );
         },
       ),
     );

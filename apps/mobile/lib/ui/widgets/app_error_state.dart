@@ -22,7 +22,11 @@ class AppErrorState extends StatelessWidget {
           children: [
             Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
             const SizedBox(height: AppSpacing.md),
-            Text(message, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium,
+            ),
             if (onRetry != null) ...[
               const SizedBox(height: AppSpacing.md),
               AppPrimaryButton(label: 'Retry', onPressed: onRetry),
