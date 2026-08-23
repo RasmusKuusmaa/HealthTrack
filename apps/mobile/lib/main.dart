@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'core/flavor.dart';
+
 void main() {
+  bootstrap(
+    const AppConfig(flavor: AppFlavor.dev, apiBaseUrl: 'http://10.0.2.2:8001'),
+  );
+}
+
+void bootstrap(AppConfig config) {
+  AppConfig.instance = config;
   runApp(const MyApp());
 }
 
