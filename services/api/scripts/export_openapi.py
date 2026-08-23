@@ -11,7 +11,9 @@ from typing import Any
 
 from app.main import app
 
-OUTPUT_PATH = Path(__file__).resolve().parents[3] / "packages" / "contracts" / "openapi.json"
+OUTPUT_PATH = (
+    Path(__file__).resolve().parents[3] / "packages" / "contracts" / "openapi.json"
+)
 
 
 def _simplify_for_dart_client(schema: dict[str, Any]) -> None:

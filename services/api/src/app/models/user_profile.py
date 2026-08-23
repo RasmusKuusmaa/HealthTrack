@@ -24,9 +24,12 @@ class UnitSystem(str, enum.Enum):
 class UserProfile(Base):
     __tablename__ = "user_profiles"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    # Deliberately equal to user_id (no independent default): user_profile is
+    # a registered sync entity, and the mobile client needs a predictable
+    # entity_id it already knows (its own user id) to target update ops at
+    # the row created server-side during registration — see
+    # app/sync/entities.py.
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
@@ -65,4 +68,10 @@ class UserProfile(Base):
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False,
+    )
+    # Tombstone for the sync entity registry (app/sync/registry.py) — never
+    # hard-deleted. In practice a profile is never deleted while its user
+    # exists, but every registered entity must support this.
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )

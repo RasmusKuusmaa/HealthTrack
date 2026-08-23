@@ -9,6 +9,12 @@ from app.middleware.rate_limit import RateLimitMiddleware
 from app.openapi import API_DESCRIPTION, API_VERSION, SERVERS, TAGS_METADATA
 from app.redis_client import get_redis
 from app.routers import auth, entities, health, sync
+from app.sync.entities import register_all as register_sync_entities
+
+# Runs once per process at import time — not inside create_app(), which
+# tests call repeatedly (see tests/conftest.py's `client` fixture) and
+# register_entity_type() raises on a duplicate registration.
+register_sync_entities()
 
 
 def create_app() -> FastAPI:

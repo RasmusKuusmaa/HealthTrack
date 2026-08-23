@@ -110,7 +110,11 @@ async def register(
             detail="An account with this email already exists.",
         ) from exc
 
-    profile = UserProfile(user_id=user.id, display_name=payload.display_name)
+    # id == user_id: see the comment on UserProfile.id — the mobile client
+    # needs a predictable entity_id to sync profile updates against.
+    profile = UserProfile(
+        id=user.id, user_id=user.id, display_name=payload.display_name
+    )
     db.add(profile)
     await db.flush()
 
