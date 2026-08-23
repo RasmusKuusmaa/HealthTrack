@@ -5,11 +5,12 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'tables/entity_field_versions_table.dart';
 import 'tables/operations_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Operations])
+@DriftDatabase(tables: [Operations, EntityFieldVersions])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 

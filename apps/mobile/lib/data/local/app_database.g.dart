@@ -668,15 +668,388 @@ class OperationsCompanion extends UpdateCompanion<Operation> {
   }
 }
 
+class $EntityFieldVersionsTable extends EntityFieldVersions
+    with TableInfo<$EntityFieldVersionsTable, EntityFieldVersion> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EntityFieldVersionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fieldNameMeta = const VerificationMeta(
+    'fieldName',
+  );
+  @override
+  late final GeneratedColumn<String> fieldName = GeneratedColumn<String>(
+    'field_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _clientTsMeta = const VerificationMeta(
+    'clientTs',
+  );
+  @override
+  late final GeneratedColumn<DateTime> clientTs = GeneratedColumn<DateTime>(
+    'client_ts',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serverSeqMeta = const VerificationMeta(
+    'serverSeq',
+  );
+  @override
+  late final GeneratedColumn<int> serverSeq = GeneratedColumn<int>(
+    'server_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    entityId,
+    fieldName,
+    userId,
+    clientTs,
+    serverSeq,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'entity_field_versions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EntityFieldVersion> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('field_name')) {
+      context.handle(
+        _fieldNameMeta,
+        fieldName.isAcceptableOrUnknown(data['field_name']!, _fieldNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fieldNameMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('client_ts')) {
+      context.handle(
+        _clientTsMeta,
+        clientTs.isAcceptableOrUnknown(data['client_ts']!, _clientTsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientTsMeta);
+    }
+    if (data.containsKey('server_seq')) {
+      context.handle(
+        _serverSeqMeta,
+        serverSeq.isAcceptableOrUnknown(data['server_seq']!, _serverSeqMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {entityId, fieldName};
+  @override
+  EntityFieldVersion map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EntityFieldVersion(
+      entityId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_id'],
+      )!,
+      fieldName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}field_name'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      clientTs: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}client_ts'],
+      )!,
+      serverSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_seq'],
+      ),
+    );
+  }
+
+  @override
+  $EntityFieldVersionsTable createAlias(String alias) {
+    return $EntityFieldVersionsTable(attachedDatabase, alias);
+  }
+}
+
+class EntityFieldVersion extends DataClass
+    implements Insertable<EntityFieldVersion> {
+  final String entityId;
+  final String fieldName;
+  final String userId;
+  final DateTime clientTs;
+  final int? serverSeq;
+  const EntityFieldVersion({
+    required this.entityId,
+    required this.fieldName,
+    required this.userId,
+    required this.clientTs,
+    this.serverSeq,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['entity_id'] = Variable<String>(entityId);
+    map['field_name'] = Variable<String>(fieldName);
+    map['user_id'] = Variable<String>(userId);
+    map['client_ts'] = Variable<DateTime>(clientTs);
+    if (!nullToAbsent || serverSeq != null) {
+      map['server_seq'] = Variable<int>(serverSeq);
+    }
+    return map;
+  }
+
+  EntityFieldVersionsCompanion toCompanion(bool nullToAbsent) {
+    return EntityFieldVersionsCompanion(
+      entityId: Value(entityId),
+      fieldName: Value(fieldName),
+      userId: Value(userId),
+      clientTs: Value(clientTs),
+      serverSeq: serverSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverSeq),
+    );
+  }
+
+  factory EntityFieldVersion.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EntityFieldVersion(
+      entityId: serializer.fromJson<String>(json['entityId']),
+      fieldName: serializer.fromJson<String>(json['fieldName']),
+      userId: serializer.fromJson<String>(json['userId']),
+      clientTs: serializer.fromJson<DateTime>(json['clientTs']),
+      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'entityId': serializer.toJson<String>(entityId),
+      'fieldName': serializer.toJson<String>(fieldName),
+      'userId': serializer.toJson<String>(userId),
+      'clientTs': serializer.toJson<DateTime>(clientTs),
+      'serverSeq': serializer.toJson<int?>(serverSeq),
+    };
+  }
+
+  EntityFieldVersion copyWith({
+    String? entityId,
+    String? fieldName,
+    String? userId,
+    DateTime? clientTs,
+    Value<int?> serverSeq = const Value.absent(),
+  }) => EntityFieldVersion(
+    entityId: entityId ?? this.entityId,
+    fieldName: fieldName ?? this.fieldName,
+    userId: userId ?? this.userId,
+    clientTs: clientTs ?? this.clientTs,
+    serverSeq: serverSeq.present ? serverSeq.value : this.serverSeq,
+  );
+  EntityFieldVersion copyWithCompanion(EntityFieldVersionsCompanion data) {
+    return EntityFieldVersion(
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      fieldName: data.fieldName.present ? data.fieldName.value : this.fieldName,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      clientTs: data.clientTs.present ? data.clientTs.value : this.clientTs,
+      serverSeq: data.serverSeq.present ? data.serverSeq.value : this.serverSeq,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntityFieldVersion(')
+          ..write('entityId: $entityId, ')
+          ..write('fieldName: $fieldName, ')
+          ..write('userId: $userId, ')
+          ..write('clientTs: $clientTs, ')
+          ..write('serverSeq: $serverSeq')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(entityId, fieldName, userId, clientTs, serverSeq);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EntityFieldVersion &&
+          other.entityId == this.entityId &&
+          other.fieldName == this.fieldName &&
+          other.userId == this.userId &&
+          other.clientTs == this.clientTs &&
+          other.serverSeq == this.serverSeq);
+}
+
+class EntityFieldVersionsCompanion extends UpdateCompanion<EntityFieldVersion> {
+  final Value<String> entityId;
+  final Value<String> fieldName;
+  final Value<String> userId;
+  final Value<DateTime> clientTs;
+  final Value<int?> serverSeq;
+  final Value<int> rowid;
+  const EntityFieldVersionsCompanion({
+    this.entityId = const Value.absent(),
+    this.fieldName = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.clientTs = const Value.absent(),
+    this.serverSeq = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EntityFieldVersionsCompanion.insert({
+    required String entityId,
+    required String fieldName,
+    required String userId,
+    required DateTime clientTs,
+    this.serverSeq = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : entityId = Value(entityId),
+       fieldName = Value(fieldName),
+       userId = Value(userId),
+       clientTs = Value(clientTs);
+  static Insertable<EntityFieldVersion> custom({
+    Expression<String>? entityId,
+    Expression<String>? fieldName,
+    Expression<String>? userId,
+    Expression<DateTime>? clientTs,
+    Expression<int>? serverSeq,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (entityId != null) 'entity_id': entityId,
+      if (fieldName != null) 'field_name': fieldName,
+      if (userId != null) 'user_id': userId,
+      if (clientTs != null) 'client_ts': clientTs,
+      if (serverSeq != null) 'server_seq': serverSeq,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EntityFieldVersionsCompanion copyWith({
+    Value<String>? entityId,
+    Value<String>? fieldName,
+    Value<String>? userId,
+    Value<DateTime>? clientTs,
+    Value<int?>? serverSeq,
+    Value<int>? rowid,
+  }) {
+    return EntityFieldVersionsCompanion(
+      entityId: entityId ?? this.entityId,
+      fieldName: fieldName ?? this.fieldName,
+      userId: userId ?? this.userId,
+      clientTs: clientTs ?? this.clientTs,
+      serverSeq: serverSeq ?? this.serverSeq,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (fieldName.present) {
+      map['field_name'] = Variable<String>(fieldName.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (clientTs.present) {
+      map['client_ts'] = Variable<DateTime>(clientTs.value);
+    }
+    if (serverSeq.present) {
+      map['server_seq'] = Variable<int>(serverSeq.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntityFieldVersionsCompanion(')
+          ..write('entityId: $entityId, ')
+          ..write('fieldName: $fieldName, ')
+          ..write('userId: $userId, ')
+          ..write('clientTs: $clientTs, ')
+          ..write('serverSeq: $serverSeq, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $OperationsTable operations = $OperationsTable(this);
+  late final $EntityFieldVersionsTable entityFieldVersions =
+      $EntityFieldVersionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [operations];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    operations,
+    entityFieldVersions,
+  ];
   @override
   DriftDatabaseOptions get options =>
       const DriftDatabaseOptions(storeDateTimeAsText: true);
@@ -995,10 +1368,228 @@ typedef $$OperationsTableProcessedTableManager =
       Operation,
       PrefetchHooks Function()
     >;
+typedef $$EntityFieldVersionsTableCreateCompanionBuilder =
+    EntityFieldVersionsCompanion Function({
+      required String entityId,
+      required String fieldName,
+      required String userId,
+      required DateTime clientTs,
+      Value<int?> serverSeq,
+      Value<int> rowid,
+    });
+typedef $$EntityFieldVersionsTableUpdateCompanionBuilder =
+    EntityFieldVersionsCompanion Function({
+      Value<String> entityId,
+      Value<String> fieldName,
+      Value<String> userId,
+      Value<DateTime> clientTs,
+      Value<int?> serverSeq,
+      Value<int> rowid,
+    });
+
+class $$EntityFieldVersionsTableFilterComposer
+    extends Composer<_$AppDatabase, $EntityFieldVersionsTable> {
+  $$EntityFieldVersionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fieldName => $composableBuilder(
+    column: $table.fieldName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get clientTs => $composableBuilder(
+    column: $table.clientTs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverSeq => $composableBuilder(
+    column: $table.serverSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EntityFieldVersionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $EntityFieldVersionsTable> {
+  $$EntityFieldVersionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fieldName => $composableBuilder(
+    column: $table.fieldName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get clientTs => $composableBuilder(
+    column: $table.clientTs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverSeq => $composableBuilder(
+    column: $table.serverSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EntityFieldVersionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EntityFieldVersionsTable> {
+  $$EntityFieldVersionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get fieldName =>
+      $composableBuilder(column: $table.fieldName, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get clientTs =>
+      $composableBuilder(column: $table.clientTs, builder: (column) => column);
+
+  GeneratedColumn<int> get serverSeq =>
+      $composableBuilder(column: $table.serverSeq, builder: (column) => column);
+}
+
+class $$EntityFieldVersionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EntityFieldVersionsTable,
+          EntityFieldVersion,
+          $$EntityFieldVersionsTableFilterComposer,
+          $$EntityFieldVersionsTableOrderingComposer,
+          $$EntityFieldVersionsTableAnnotationComposer,
+          $$EntityFieldVersionsTableCreateCompanionBuilder,
+          $$EntityFieldVersionsTableUpdateCompanionBuilder,
+          (
+            EntityFieldVersion,
+            BaseReferences<
+              _$AppDatabase,
+              $EntityFieldVersionsTable,
+              EntityFieldVersion
+            >,
+          ),
+          EntityFieldVersion,
+          PrefetchHooks Function()
+        > {
+  $$EntityFieldVersionsTableTableManager(
+    _$AppDatabase db,
+    $EntityFieldVersionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EntityFieldVersionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EntityFieldVersionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$EntityFieldVersionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> entityId = const Value.absent(),
+                Value<String> fieldName = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<DateTime> clientTs = const Value.absent(),
+                Value<int?> serverSeq = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EntityFieldVersionsCompanion(
+                entityId: entityId,
+                fieldName: fieldName,
+                userId: userId,
+                clientTs: clientTs,
+                serverSeq: serverSeq,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String entityId,
+                required String fieldName,
+                required String userId,
+                required DateTime clientTs,
+                Value<int?> serverSeq = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EntityFieldVersionsCompanion.insert(
+                entityId: entityId,
+                fieldName: fieldName,
+                userId: userId,
+                clientTs: clientTs,
+                serverSeq: serverSeq,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EntityFieldVersionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EntityFieldVersionsTable,
+      EntityFieldVersion,
+      $$EntityFieldVersionsTableFilterComposer,
+      $$EntityFieldVersionsTableOrderingComposer,
+      $$EntityFieldVersionsTableAnnotationComposer,
+      $$EntityFieldVersionsTableCreateCompanionBuilder,
+      $$EntityFieldVersionsTableUpdateCompanionBuilder,
+      (
+        EntityFieldVersion,
+        BaseReferences<
+          _$AppDatabase,
+          $EntityFieldVersionsTable,
+          EntityFieldVersion
+        >,
+      ),
+      EntityFieldVersion,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
   $$OperationsTableTableManager get operations =>
       $$OperationsTableTableManager(_db, _db.operations);
+  $$EntityFieldVersionsTableTableManager get entityFieldVersions =>
+      $$EntityFieldVersionsTableTableManager(_db, _db.entityFieldVersions);
 }
