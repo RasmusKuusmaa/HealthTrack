@@ -1,0 +1,10 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Store DateTime columns as ISO-8601 UTC text instead of a local
+          # unix timestamp, so reads round-trip as UTC instants rather than
+          # ambiguous local time (see the offline-first UTC invariant in
+          # docs/architecture.md).
+          store_date_time_values_as_text: true
