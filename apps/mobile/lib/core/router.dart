@@ -2,15 +2,31 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/login_screen.dart';
+import '../features/auth/register_screen.dart';
+import '../features/auth/verify_email_screen.dart';
 import '../ui/placeholder_screen.dart';
 import '../ui/shell/app_shell.dart';
 import 'auth/auth_state_provider.dart';
 
 const loginPath = '/login';
+const registerPath = '/register';
+const verifyEmailPath = '/verify-email';
+const mfaChallengePath = '/mfa-challenge';
 const homePath = '/home';
 const logPath = '/log';
 const progressPath = '/progress';
 const settingsPath = '/settings';
+
+/// Routes reachable before signing in. An authenticated user is redirected
+/// away from these into the shell; an unauthenticated user is redirected
+/// into one of these (login) from everywhere else.
+const _publicPaths = {
+  loginPath,
+  registerPath,
+  verifyEmailPath,
+  mfaChallengePath,
+};
 
 /// Notifies go_router to re-run [GoRouter.redirect] whenever
 /// [isAuthenticatedProvider] changes, since `GoRouter` only re-evaluates
@@ -30,16 +46,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: refreshNotifier,
     redirect: (context, state) {
       final isAuthenticated = ref.read(isAuthenticatedProvider);
-      final goingToLogin = state.matchedLocation == loginPath;
+      final isPublicRoute = _publicPaths.contains(state.matchedLocation);
 
-      if (!isAuthenticated && !goingToLogin) return loginPath;
-      if (isAuthenticated && goingToLogin) return homePath;
+      if (!isAuthenticated && !isPublicRoute) return loginPath;
+      if (isAuthenticated && isPublicRoute) return homePath;
       return null;
     },
     routes: [
       GoRoute(
         path: loginPath,
-        builder: (context, state) => const PlaceholderScreen(title: 'Sign in'),
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: registerPath,
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: verifyEmailPath,
+        builder: (context, state) =>
+            VerifyEmailScreen(token: state.uri.queryParameters['token']),
+      ),
+      GoRoute(
+        path: mfaChallengePath,
+        builder: (context, state) =>
+            const PlaceholderScreen(title: "Verify it's you"),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

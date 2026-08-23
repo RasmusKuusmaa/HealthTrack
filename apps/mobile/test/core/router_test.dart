@@ -21,7 +21,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Sign in'), findsOneWidget);
     expect(find.text('Home'), findsNothing);
   });
 
@@ -62,7 +62,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Sign in'), findsOneWidget);
 
     container.read(isAuthenticatedProvider.notifier).signIn();
     await tester.pumpAndSettle();
