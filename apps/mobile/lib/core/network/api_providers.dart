@@ -8,6 +8,7 @@ import '../../data/secure/token_store.dart';
 import '../../features/auth/auth_repository.dart';
 import '../flavor.dart';
 import 'auth_interceptor.dart';
+import 'jwt.dart';
 
 part 'api_providers.g.dart';
 
@@ -55,4 +56,19 @@ Future<AuthRepository> authRepository(Ref ref) async {
     tokenStore: ref.watch(tokenStoreProvider),
     deviceId: resolvedDeviceId,
   );
+}
+
+/// The signed-in user's id, read from the stored access token's `sub`
+/// claim — `POST /auth/login` returns only tokens, not the user's id.
+@riverpod
+Future<String> currentUserId(Ref ref) async {
+  final accessToken = await ref.watch(tokenStoreProvider).readAccessToken();
+  if (accessToken == null) {
+    throw StateError('currentUserId read before signing in.');
+  }
+  final subject = decodeJwtSubject(accessToken);
+  if (subject == null) {
+    throw StateError('Access token has no readable sub claim.');
+  }
+  return subject;
 }

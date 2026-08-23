@@ -7,10 +7,11 @@ import 'package:path_provider/path_provider.dart';
 
 import 'tables/entity_field_versions_table.dart';
 import 'tables/operations_table.dart';
+import 'tables/user_profiles_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Operations, EntityFieldVersions])
+@DriftDatabase(tables: [Operations, EntityFieldVersions, UserProfiles])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 

@@ -213,3 +213,44 @@ final class AuthRepositoryProvider
 }
 
 String _$authRepositoryHash() => r'8531bf12951a1b5dbf4123f05ec810c12d7b74f0';
+
+/// The signed-in user's id, read from the stored access token's `sub`
+/// claim — `POST /auth/login` returns only tokens, not the user's id.
+
+@ProviderFor(currentUserId)
+final currentUserIdProvider = CurrentUserIdProvider._();
+
+/// The signed-in user's id, read from the stored access token's `sub`
+/// claim — `POST /auth/login` returns only tokens, not the user's id.
+
+final class CurrentUserIdProvider
+    extends $FunctionalProvider<AsyncValue<String>, String, FutureOr<String>>
+    with $FutureModifier<String>, $FutureProvider<String> {
+  /// The signed-in user's id, read from the stored access token's `sub`
+  /// claim — `POST /auth/login` returns only tokens, not the user's id.
+  CurrentUserIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentUserIdProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentUserIdHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<String> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<String> create(Ref ref) {
+    return currentUserId(ref);
+  }
+}
+
+String _$currentUserIdHash() => r'2ab130b884920e3b6f598fc901ea1f5803919e23';

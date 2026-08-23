@@ -1036,12 +1036,628 @@ class EntityFieldVersionsCompanion extends UpdateCompanion<EntityFieldVersion> {
   }
 }
 
+class $UserProfilesTable extends UserProfiles
+    with TableInfo<$UserProfilesTable, UserProfile> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UserProfilesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _birthDateMeta = const VerificationMeta(
+    'birthDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> birthDate = GeneratedColumn<DateTime>(
+    'birth_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sexAtBirthMeta = const VerificationMeta(
+    'sexAtBirth',
+  );
+  @override
+  late final GeneratedColumn<String> sexAtBirth = GeneratedColumn<String>(
+    'sex_at_birth',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _heightCmMeta = const VerificationMeta(
+    'heightCm',
+  );
+  @override
+  late final GeneratedColumn<double> heightCm = GeneratedColumn<double>(
+    'height_cm',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _timezoneMeta = const VerificationMeta(
+    'timezone',
+  );
+  @override
+  late final GeneratedColumn<String> timezone = GeneratedColumn<String>(
+    'timezone',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('UTC'),
+  );
+  static const VerificationMeta _localeMeta = const VerificationMeta('locale');
+  @override
+  late final GeneratedColumn<String> locale = GeneratedColumn<String>(
+    'locale',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en'),
+  );
+  static const VerificationMeta _unitSystemMeta = const VerificationMeta(
+    'unitSystem',
+  );
+  @override
+  late final GeneratedColumn<String> unitSystem = GeneratedColumn<String>(
+    'unit_system',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('metric'),
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    displayName,
+    birthDate,
+    sexAtBirth,
+    heightCm,
+    timezone,
+    locale,
+    unitSystem,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_profiles';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<UserProfile> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('birth_date')) {
+      context.handle(
+        _birthDateMeta,
+        birthDate.isAcceptableOrUnknown(data['birth_date']!, _birthDateMeta),
+      );
+    }
+    if (data.containsKey('sex_at_birth')) {
+      context.handle(
+        _sexAtBirthMeta,
+        sexAtBirth.isAcceptableOrUnknown(
+          data['sex_at_birth']!,
+          _sexAtBirthMeta,
+        ),
+      );
+    }
+    if (data.containsKey('height_cm')) {
+      context.handle(
+        _heightCmMeta,
+        heightCm.isAcceptableOrUnknown(data['height_cm']!, _heightCmMeta),
+      );
+    }
+    if (data.containsKey('timezone')) {
+      context.handle(
+        _timezoneMeta,
+        timezone.isAcceptableOrUnknown(data['timezone']!, _timezoneMeta),
+      );
+    }
+    if (data.containsKey('locale')) {
+      context.handle(
+        _localeMeta,
+        locale.isAcceptableOrUnknown(data['locale']!, _localeMeta),
+      );
+    }
+    if (data.containsKey('unit_system')) {
+      context.handle(
+        _unitSystemMeta,
+        unitSystem.isAcceptableOrUnknown(data['unit_system']!, _unitSystemMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UserProfile map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UserProfile(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      ),
+      birthDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}birth_date'],
+      ),
+      sexAtBirth: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sex_at_birth'],
+      ),
+      heightCm: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}height_cm'],
+      ),
+      timezone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}timezone'],
+      )!,
+      locale: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}locale'],
+      )!,
+      unitSystem: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit_system'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $UserProfilesTable createAlias(String alias) {
+    return $UserProfilesTable(attachedDatabase, alias);
+  }
+}
+
+class UserProfile extends DataClass implements Insertable<UserProfile> {
+  final String id;
+  final String userId;
+  final String? displayName;
+  final DateTime? birthDate;
+  final String? sexAtBirth;
+  final double? heightCm;
+  final String timezone;
+  final String locale;
+  final String unitSystem;
+  final DateTime? deletedAt;
+  const UserProfile({
+    required this.id,
+    required this.userId,
+    this.displayName,
+    this.birthDate,
+    this.sexAtBirth,
+    this.heightCm,
+    required this.timezone,
+    required this.locale,
+    required this.unitSystem,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || displayName != null) {
+      map['display_name'] = Variable<String>(displayName);
+    }
+    if (!nullToAbsent || birthDate != null) {
+      map['birth_date'] = Variable<DateTime>(birthDate);
+    }
+    if (!nullToAbsent || sexAtBirth != null) {
+      map['sex_at_birth'] = Variable<String>(sexAtBirth);
+    }
+    if (!nullToAbsent || heightCm != null) {
+      map['height_cm'] = Variable<double>(heightCm);
+    }
+    map['timezone'] = Variable<String>(timezone);
+    map['locale'] = Variable<String>(locale);
+    map['unit_system'] = Variable<String>(unitSystem);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  UserProfilesCompanion toCompanion(bool nullToAbsent) {
+    return UserProfilesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      displayName: displayName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(displayName),
+      birthDate: birthDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(birthDate),
+      sexAtBirth: sexAtBirth == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sexAtBirth),
+      heightCm: heightCm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(heightCm),
+      timezone: Value(timezone),
+      locale: Value(locale),
+      unitSystem: Value(unitSystem),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory UserProfile.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UserProfile(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      displayName: serializer.fromJson<String?>(json['displayName']),
+      birthDate: serializer.fromJson<DateTime?>(json['birthDate']),
+      sexAtBirth: serializer.fromJson<String?>(json['sexAtBirth']),
+      heightCm: serializer.fromJson<double?>(json['heightCm']),
+      timezone: serializer.fromJson<String>(json['timezone']),
+      locale: serializer.fromJson<String>(json['locale']),
+      unitSystem: serializer.fromJson<String>(json['unitSystem']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'displayName': serializer.toJson<String?>(displayName),
+      'birthDate': serializer.toJson<DateTime?>(birthDate),
+      'sexAtBirth': serializer.toJson<String?>(sexAtBirth),
+      'heightCm': serializer.toJson<double?>(heightCm),
+      'timezone': serializer.toJson<String>(timezone),
+      'locale': serializer.toJson<String>(locale),
+      'unitSystem': serializer.toJson<String>(unitSystem),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  UserProfile copyWith({
+    String? id,
+    String? userId,
+    Value<String?> displayName = const Value.absent(),
+    Value<DateTime?> birthDate = const Value.absent(),
+    Value<String?> sexAtBirth = const Value.absent(),
+    Value<double?> heightCm = const Value.absent(),
+    String? timezone,
+    String? locale,
+    String? unitSystem,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => UserProfile(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    displayName: displayName.present ? displayName.value : this.displayName,
+    birthDate: birthDate.present ? birthDate.value : this.birthDate,
+    sexAtBirth: sexAtBirth.present ? sexAtBirth.value : this.sexAtBirth,
+    heightCm: heightCm.present ? heightCm.value : this.heightCm,
+    timezone: timezone ?? this.timezone,
+    locale: locale ?? this.locale,
+    unitSystem: unitSystem ?? this.unitSystem,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  UserProfile copyWithCompanion(UserProfilesCompanion data) {
+    return UserProfile(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      birthDate: data.birthDate.present ? data.birthDate.value : this.birthDate,
+      sexAtBirth: data.sexAtBirth.present
+          ? data.sexAtBirth.value
+          : this.sexAtBirth,
+      heightCm: data.heightCm.present ? data.heightCm.value : this.heightCm,
+      timezone: data.timezone.present ? data.timezone.value : this.timezone,
+      locale: data.locale.present ? data.locale.value : this.locale,
+      unitSystem: data.unitSystem.present
+          ? data.unitSystem.value
+          : this.unitSystem,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserProfile(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('displayName: $displayName, ')
+          ..write('birthDate: $birthDate, ')
+          ..write('sexAtBirth: $sexAtBirth, ')
+          ..write('heightCm: $heightCm, ')
+          ..write('timezone: $timezone, ')
+          ..write('locale: $locale, ')
+          ..write('unitSystem: $unitSystem, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    displayName,
+    birthDate,
+    sexAtBirth,
+    heightCm,
+    timezone,
+    locale,
+    unitSystem,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserProfile &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.displayName == this.displayName &&
+          other.birthDate == this.birthDate &&
+          other.sexAtBirth == this.sexAtBirth &&
+          other.heightCm == this.heightCm &&
+          other.timezone == this.timezone &&
+          other.locale == this.locale &&
+          other.unitSystem == this.unitSystem &&
+          other.deletedAt == this.deletedAt);
+}
+
+class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> displayName;
+  final Value<DateTime?> birthDate;
+  final Value<String?> sexAtBirth;
+  final Value<double?> heightCm;
+  final Value<String> timezone;
+  final Value<String> locale;
+  final Value<String> unitSystem;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const UserProfilesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.birthDate = const Value.absent(),
+    this.sexAtBirth = const Value.absent(),
+    this.heightCm = const Value.absent(),
+    this.timezone = const Value.absent(),
+    this.locale = const Value.absent(),
+    this.unitSystem = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  UserProfilesCompanion.insert({
+    required String id,
+    required String userId,
+    this.displayName = const Value.absent(),
+    this.birthDate = const Value.absent(),
+    this.sexAtBirth = const Value.absent(),
+    this.heightCm = const Value.absent(),
+    this.timezone = const Value.absent(),
+    this.locale = const Value.absent(),
+    this.unitSystem = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId);
+  static Insertable<UserProfile> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? displayName,
+    Expression<DateTime>? birthDate,
+    Expression<String>? sexAtBirth,
+    Expression<double>? heightCm,
+    Expression<String>? timezone,
+    Expression<String>? locale,
+    Expression<String>? unitSystem,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (displayName != null) 'display_name': displayName,
+      if (birthDate != null) 'birth_date': birthDate,
+      if (sexAtBirth != null) 'sex_at_birth': sexAtBirth,
+      if (heightCm != null) 'height_cm': heightCm,
+      if (timezone != null) 'timezone': timezone,
+      if (locale != null) 'locale': locale,
+      if (unitSystem != null) 'unit_system': unitSystem,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  UserProfilesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? displayName,
+    Value<DateTime?>? birthDate,
+    Value<String?>? sexAtBirth,
+    Value<double?>? heightCm,
+    Value<String>? timezone,
+    Value<String>? locale,
+    Value<String>? unitSystem,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return UserProfilesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      displayName: displayName ?? this.displayName,
+      birthDate: birthDate ?? this.birthDate,
+      sexAtBirth: sexAtBirth ?? this.sexAtBirth,
+      heightCm: heightCm ?? this.heightCm,
+      timezone: timezone ?? this.timezone,
+      locale: locale ?? this.locale,
+      unitSystem: unitSystem ?? this.unitSystem,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (birthDate.present) {
+      map['birth_date'] = Variable<DateTime>(birthDate.value);
+    }
+    if (sexAtBirth.present) {
+      map['sex_at_birth'] = Variable<String>(sexAtBirth.value);
+    }
+    if (heightCm.present) {
+      map['height_cm'] = Variable<double>(heightCm.value);
+    }
+    if (timezone.present) {
+      map['timezone'] = Variable<String>(timezone.value);
+    }
+    if (locale.present) {
+      map['locale'] = Variable<String>(locale.value);
+    }
+    if (unitSystem.present) {
+      map['unit_system'] = Variable<String>(unitSystem.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserProfilesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('displayName: $displayName, ')
+          ..write('birthDate: $birthDate, ')
+          ..write('sexAtBirth: $sexAtBirth, ')
+          ..write('heightCm: $heightCm, ')
+          ..write('timezone: $timezone, ')
+          ..write('locale: $locale, ')
+          ..write('unitSystem: $unitSystem, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $OperationsTable operations = $OperationsTable(this);
   late final $EntityFieldVersionsTable entityFieldVersions =
       $EntityFieldVersionsTable(this);
+  late final $UserProfilesTable userProfiles = $UserProfilesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1049,6 +1665,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     operations,
     entityFieldVersions,
+    userProfiles,
   ];
   @override
   DriftDatabaseOptions get options =>
@@ -1584,6 +2201,307 @@ typedef $$EntityFieldVersionsTableProcessedTableManager =
       EntityFieldVersion,
       PrefetchHooks Function()
     >;
+typedef $$UserProfilesTableCreateCompanionBuilder =
+    UserProfilesCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> displayName,
+      Value<DateTime?> birthDate,
+      Value<String?> sexAtBirth,
+      Value<double?> heightCm,
+      Value<String> timezone,
+      Value<String> locale,
+      Value<String> unitSystem,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$UserProfilesTableUpdateCompanionBuilder =
+    UserProfilesCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> displayName,
+      Value<DateTime?> birthDate,
+      Value<String?> sexAtBirth,
+      Value<double?> heightCm,
+      Value<String> timezone,
+      Value<String> locale,
+      Value<String> unitSystem,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+class $$UserProfilesTableFilterComposer
+    extends Composer<_$AppDatabase, $UserProfilesTable> {
+  $$UserProfilesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get birthDate => $composableBuilder(
+    column: $table.birthDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sexAtBirth => $composableBuilder(
+    column: $table.sexAtBirth,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get heightCm => $composableBuilder(
+    column: $table.heightCm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get timezone => $composableBuilder(
+    column: $table.timezone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get locale => $composableBuilder(
+    column: $table.locale,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unitSystem => $composableBuilder(
+    column: $table.unitSystem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$UserProfilesTableOrderingComposer
+    extends Composer<_$AppDatabase, $UserProfilesTable> {
+  $$UserProfilesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get birthDate => $composableBuilder(
+    column: $table.birthDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sexAtBirth => $composableBuilder(
+    column: $table.sexAtBirth,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get heightCm => $composableBuilder(
+    column: $table.heightCm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get timezone => $composableBuilder(
+    column: $table.timezone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get locale => $composableBuilder(
+    column: $table.locale,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unitSystem => $composableBuilder(
+    column: $table.unitSystem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$UserProfilesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UserProfilesTable> {
+  $$UserProfilesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get birthDate =>
+      $composableBuilder(column: $table.birthDate, builder: (column) => column);
+
+  GeneratedColumn<String> get sexAtBirth => $composableBuilder(
+    column: $table.sexAtBirth,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get heightCm =>
+      $composableBuilder(column: $table.heightCm, builder: (column) => column);
+
+  GeneratedColumn<String> get timezone =>
+      $composableBuilder(column: $table.timezone, builder: (column) => column);
+
+  GeneratedColumn<String> get locale =>
+      $composableBuilder(column: $table.locale, builder: (column) => column);
+
+  GeneratedColumn<String> get unitSystem => $composableBuilder(
+    column: $table.unitSystem,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$UserProfilesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $UserProfilesTable,
+          UserProfile,
+          $$UserProfilesTableFilterComposer,
+          $$UserProfilesTableOrderingComposer,
+          $$UserProfilesTableAnnotationComposer,
+          $$UserProfilesTableCreateCompanionBuilder,
+          $$UserProfilesTableUpdateCompanionBuilder,
+          (
+            UserProfile,
+            BaseReferences<_$AppDatabase, $UserProfilesTable, UserProfile>,
+          ),
+          UserProfile,
+          PrefetchHooks Function()
+        > {
+  $$UserProfilesTableTableManager(_$AppDatabase db, $UserProfilesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UserProfilesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UserProfilesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UserProfilesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> displayName = const Value.absent(),
+                Value<DateTime?> birthDate = const Value.absent(),
+                Value<String?> sexAtBirth = const Value.absent(),
+                Value<double?> heightCm = const Value.absent(),
+                Value<String> timezone = const Value.absent(),
+                Value<String> locale = const Value.absent(),
+                Value<String> unitSystem = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => UserProfilesCompanion(
+                id: id,
+                userId: userId,
+                displayName: displayName,
+                birthDate: birthDate,
+                sexAtBirth: sexAtBirth,
+                heightCm: heightCm,
+                timezone: timezone,
+                locale: locale,
+                unitSystem: unitSystem,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> displayName = const Value.absent(),
+                Value<DateTime?> birthDate = const Value.absent(),
+                Value<String?> sexAtBirth = const Value.absent(),
+                Value<double?> heightCm = const Value.absent(),
+                Value<String> timezone = const Value.absent(),
+                Value<String> locale = const Value.absent(),
+                Value<String> unitSystem = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => UserProfilesCompanion.insert(
+                id: id,
+                userId: userId,
+                displayName: displayName,
+                birthDate: birthDate,
+                sexAtBirth: sexAtBirth,
+                heightCm: heightCm,
+                timezone: timezone,
+                locale: locale,
+                unitSystem: unitSystem,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$UserProfilesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UserProfilesTable,
+      UserProfile,
+      $$UserProfilesTableFilterComposer,
+      $$UserProfilesTableOrderingComposer,
+      $$UserProfilesTableAnnotationComposer,
+      $$UserProfilesTableCreateCompanionBuilder,
+      $$UserProfilesTableUpdateCompanionBuilder,
+      (
+        UserProfile,
+        BaseReferences<_$AppDatabase, $UserProfilesTable, UserProfile>,
+      ),
+      UserProfile,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1592,4 +2510,6 @@ class $AppDatabaseManager {
       $$OperationsTableTableManager(_db, _db.operations);
   $$EntityFieldVersionsTableTableManager get entityFieldVersions =>
       $$EntityFieldVersionsTableTableManager(_db, _db.entityFieldVersions);
+  $$UserProfilesTableTableManager get userProfiles =>
+      $$UserProfilesTableTableManager(_db, _db.userProfiles);
 }
