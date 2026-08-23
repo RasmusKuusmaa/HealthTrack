@@ -1,4 +1,4 @@
-.PHONY: up down api mobile web test lint migrate
+.PHONY: up down api mobile web test lint migrate openapi
 
 up:
 	docker compose up -d
@@ -27,3 +27,12 @@ lint:
 
 migrate:
 	cd services/api && alembic upgrade head
+
+openapi:
+	cd services/api && python scripts/export_openapi.py
+	npx --yes @openapitools/openapi-generator-cli generate \
+		-i packages/contracts/openapi.json \
+		-g dart-dio \
+		-o packages/contracts \
+		--additional-properties=serializationLibrary=json_serializable,pubName=healthtrack_api_client
+	cd packages/contracts && dart pub get && dart run build_runner build --delete-conflicting-outputs

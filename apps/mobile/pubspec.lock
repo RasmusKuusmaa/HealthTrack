@@ -193,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  copy_with_extension:
+    dependency: transitive
+    description:
+      name: copy_with_extension
+      sha256: "28b8a99384df46f5287ed87e249869fddedd299752ea83603800448e0523f00b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.1.0"
   coverage:
     dependency: transitive
     description:
@@ -424,6 +432,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
+  healthtrack_api_client:
+    dependency: "direct main"
+    description:
+      path: "../../packages/contracts"
+      relative: true
+    source: path
+    version: "1.0.0"
   hooks:
     dependency: transitive
     description:

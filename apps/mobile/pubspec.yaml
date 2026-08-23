@@ -47,6 +47,8 @@ dependencies:
   connectivity_plus: ^7.0.0
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
+  healthtrack_api_client:
+    path: ../../packages/contracts
 
 dev_dependencies:
   flutter_test:
