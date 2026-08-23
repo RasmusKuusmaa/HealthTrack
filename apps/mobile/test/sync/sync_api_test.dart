@@ -144,4 +144,43 @@ void main() {
 
     await expectLater(api.pull(since: 0), throwsA(isA<SyncApiException>()));
   });
+
+  test('bootstrap posts and parses the returned snapshot', () async {
+    late RequestOptions capturedOptions;
+
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
+      ..httpClientAdapter = _FakeAdapter((options) {
+        capturedOptions = options;
+        return _jsonResponse(200, {
+          'entities': {
+            'user_profile': [
+              {'id': 'user-1', 'display_name': 'Ada', 'height_cm': 170.0},
+            ],
+            'weight_entry': [],
+          },
+          'cursor': 12,
+        });
+      });
+
+    final api = DioSyncApi(dio);
+    final snapshot = await api.bootstrap();
+
+    expect(capturedOptions.method, 'POST');
+    expect(capturedOptions.path, '/sync/bootstrap');
+    expect(snapshot.cursor, 12);
+    expect(snapshot.entities['user_profile'], hasLength(1));
+    expect(snapshot.entities['user_profile']!.single['display_name'], 'Ada');
+    expect(snapshot.entities['weight_entry'], isEmpty);
+  });
+
+  test('bootstrap wraps a failed request in a SyncApiException', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
+      ..httpClientAdapter = _FakeAdapter(
+        (options) => _jsonResponse(500, {'detail': 'boom'}),
+      );
+
+    final api = DioSyncApi(dio);
+
+    await expectLater(api.bootstrap(), throwsA(isA<SyncApiException>()));
+  });
 }

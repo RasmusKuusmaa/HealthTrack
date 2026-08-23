@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../data/local/app_database.dart';
+import 'entity_registry.dart';
 import 'local_materializer.dart';
 import 'sync_api.dart';
 import 'sync_cursor_store.dart';
@@ -22,12 +23,14 @@ class SyncEngine {
     required SyncApi api,
     required SyncCursorStore cursorStore,
     required LocalMaterializer materializer,
+    required EntityRegistry registry,
     required String userId,
     int pullPageLimit = 200,
   }) : _db = db,
        _api = api,
        _cursorStore = cursorStore,
        _materializer = materializer,
+       _registry = registry,
        _userId = userId,
        _pullPageLimit = pullPageLimit;
 
@@ -35,6 +38,7 @@ class SyncEngine {
   final SyncApi _api;
   final SyncCursorStore _cursorStore;
   final LocalMaterializer _materializer;
+  final EntityRegistry _registry;
   final String _userId;
   final int _pullPageLimit;
 
@@ -123,5 +127,34 @@ class SyncEngine {
       cursor = page.nextCursor;
       await _cursorStore.write(cursor);
     }
+  }
+
+  /// Fast-forwards a new (or reinstalled) device: installs the compacted
+  /// snapshot directly instead of replaying the full op history, then sets
+  /// the cursor to resume incremental `pull()` from. Snapshot rows are the
+  /// server's current truth, so they're applied directly — not through
+  /// field-level last-write-wins — since nothing has "voted" on them
+  /// locally yet; any op that arrives afterward necessarily happened after
+  /// the snapshot (`server_seq > cursor`) and goes through the normal `pull`
+  /// path's conflict resolution as usual.
+  Future<void> bootstrap() async {
+    final snapshot = await _api.bootstrap();
+
+    for (final entry in snapshot.entities.entries) {
+      final materializer = _registry[entry.key];
+      if (materializer == null) continue;
+
+      for (final row in entry.value) {
+        final fields = Map<String, dynamic>.from(row);
+        final entityId = fields.remove('id') as String;
+        await materializer.applyCreateOrUpdate(
+          entityId: entityId,
+          userId: _userId,
+          fields: fields,
+        );
+      }
+    }
+
+    await _cursorStore.write(snapshot.cursor);
   }
 }

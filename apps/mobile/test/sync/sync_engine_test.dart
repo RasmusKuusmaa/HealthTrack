@@ -66,6 +66,16 @@ class _FakeSyncApi implements SyncApi {
     pullCalls++;
     return page;
   }
+
+  BootstrapSnapshot? bootstrapSnapshot;
+  int bootstrapCalls = 0;
+
+  @override
+  Future<BootstrapSnapshot> bootstrap() async {
+    bootstrapCalls++;
+    return bootstrapSnapshot ??
+        const BootstrapSnapshot(entities: {}, cursor: 0);
+  }
 }
 
 void main() {
@@ -74,6 +84,7 @@ void main() {
   late _FakeSyncApi api;
   late SyncCursorStore cursorStore;
   late _FakeEntityMaterializer fakeEntity;
+  late EntityRegistry registry;
   late SyncEngine engine;
 
   setUp(() {
@@ -87,12 +98,13 @@ void main() {
     api = _FakeSyncApi();
     cursorStore = SyncCursorStore(_InMemorySecureStore());
     fakeEntity = _FakeEntityMaterializer();
-    final registry = EntityRegistry()..register('weight_entry', fakeEntity);
+    registry = EntityRegistry()..register('weight_entry', fakeEntity);
     engine = SyncEngine(
       db: db,
       api: api,
       cursorStore: cursorStore,
       materializer: LocalMaterializer(db, registry),
+      registry: registry,
       userId: 'user-1',
     );
   });
@@ -242,5 +254,46 @@ void main() {
 
     expect(api.lastPushed, isNotNull);
     expect(api.pullCalls, 1);
+  });
+
+  group('bootstrap', () {
+    test('applies every row directly and sets the cursor', () async {
+      api.bootstrapSnapshot = const BootstrapSnapshot(
+        entities: {
+          'weight_entry': [
+            {'id': 'e1', 'weight_kg': 80.0},
+          ],
+        },
+        cursor: 7,
+      );
+
+      await engine.bootstrap();
+
+      expect(fakeEntity.projection['e1'], {'weight_kg': 80.0});
+      expect(await cursorStore.read(), 7);
+    });
+
+    test('skips rows for an entity type with no local materializer', () async {
+      api.bootstrapSnapshot = const BootstrapSnapshot(
+        entities: {
+          'unregistered_type': [
+            {'id': 'e1', 'note': 'irrelevant'},
+          ],
+        },
+        cursor: 3,
+      );
+
+      await engine.bootstrap();
+
+      expect(await cursorStore.read(), 3);
+    });
+
+    test('sets the cursor even when there are no entities at all', () async {
+      api.bootstrapSnapshot = const BootstrapSnapshot(entities: {}, cursor: 0);
+
+      await engine.bootstrap();
+
+      expect(await cursorStore.read(), 0);
+    });
   });
 }

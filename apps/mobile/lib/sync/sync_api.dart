@@ -100,6 +100,30 @@ class PullPage {
   final int nextCursor;
 }
 
+/// Mirrors `BootstrapResponse`: a full compacted snapshot of every entity
+/// the caller owns, plus the cursor to resume incremental pulls from.
+class BootstrapSnapshot {
+  const BootstrapSnapshot({required this.entities, required this.cursor});
+
+  factory BootstrapSnapshot.fromJson(Map<String, dynamic> json) {
+    final rawEntities = json['entities'] as Map<String, dynamic>;
+    return BootstrapSnapshot(
+      entities: rawEntities.map(
+        (entityType, rows) => MapEntry(
+          entityType,
+          (rows as List<dynamic>).cast<Map<String, dynamic>>(),
+        ),
+      ),
+      cursor: json['cursor'] as int,
+    );
+  }
+
+  /// entity_type -> that type's live rows, each a plain field-name/value
+  /// map including `id`.
+  final Map<String, List<Map<String, dynamic>>> entities;
+  final int cursor;
+}
+
 /// Wraps a failed call to the sync HTTP endpoints.
 class SyncApiException implements Exception {
   SyncApiException(this.message, {this.cause});
@@ -115,6 +139,8 @@ abstract class SyncApi {
   Future<List<PushOpResult>> push(List<PushOpRequest> ops);
 
   Future<PullPage> pull({required int since, int? limit});
+
+  Future<BootstrapSnapshot> bootstrap();
 }
 
 class DioSyncApi implements SyncApi {
@@ -148,6 +174,16 @@ class DioSyncApi implements SyncApi {
       return PullPage.fromJson(response.data!);
     } on DioException catch (e) {
       throw SyncApiException('Failed to pull operations.', cause: e);
+    }
+  }
+
+  @override
+  Future<BootstrapSnapshot> bootstrap() async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>('/sync/bootstrap');
+      return BootstrapSnapshot.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw SyncApiException('Failed to bootstrap.', cause: e);
     }
   }
 }
