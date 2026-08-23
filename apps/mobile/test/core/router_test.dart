@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:healthtrack/core/auth/auth_state_provider.dart';
 import 'package:healthtrack/core/router.dart';
+import 'package:healthtrack/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('redirects an unauthenticated user to the sign-in screen', (
@@ -16,6 +17,8 @@ void main() {
         container: container,
         child: MaterialApp.router(
           routerConfig: container.read(appRouterProvider),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),
     );
@@ -37,6 +40,8 @@ void main() {
         container: container,
         child: MaterialApp.router(
           routerConfig: container.read(appRouterProvider),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),
     );
@@ -58,6 +63,8 @@ void main() {
         container: container,
         child: MaterialApp.router(
           routerConfig: container.read(appRouterProvider),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),
     );
@@ -82,6 +89,8 @@ void main() {
         container: container,
         child: MaterialApp.router(
           routerConfig: container.read(appRouterProvider),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),
     );

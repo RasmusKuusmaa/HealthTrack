@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+  "appTitle": "HealthTrack",
+  "@appTitle": {
+    "description": "The application's name, shown in the OS task switcher and window title."
+  },
+  "commonOk": "OK",
+  "commonCancel": "Cancel",
+  "commonRetry": "Retry",
+  "signInTitle": "Sign in",
+  "signInEmailLabel": "Email",
+  "signInPasswordLabel": "Password"
+}

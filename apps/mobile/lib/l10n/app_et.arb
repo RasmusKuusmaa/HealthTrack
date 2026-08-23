@@ -1,0 +1,10 @@
+{
+  "@@locale": "et",
+  "appTitle": "HealthTrack",
+  "commonOk": "OK",
+  "commonCancel": "Loobu",
+  "commonRetry": "Proovi uuesti",
+  "signInTitle": "Logi sisse",
+  "signInEmailLabel": "E-post",
+  "signInPasswordLabel": "Salasõna"
+}

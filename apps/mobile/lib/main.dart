@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/flavor.dart';
 import 'core/router.dart';
+import 'l10n/app_localizations.dart';
 import 'ui/theme/app_theme.dart';
 
 void main() {
@@ -26,6 +27,8 @@ class MyApp extends ConsumerWidget {
       title: 'HealthTrack',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     );
   }

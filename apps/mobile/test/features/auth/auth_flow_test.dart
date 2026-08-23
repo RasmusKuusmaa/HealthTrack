@@ -15,6 +15,7 @@ import 'package:healthtrack/data/secure/secure_key_value_store.dart';
 import 'package:healthtrack/data/secure/token_store.dart';
 import 'package:healthtrack/features/auth/auth_repository.dart';
 import 'package:healthtrack/features/profile/profile_providers.dart';
+import 'package:healthtrack/l10n/app_localizations.dart';
 import 'package:healthtrack/features/profile/user_profile_materializer.dart';
 import 'package:healthtrack/features/profile/user_profile_repository.dart';
 import 'package:healthtrack/sync/entity_registry.dart';
@@ -168,6 +169,8 @@ Future<ProviderContainer> _pumpApp(
       container: container,
       child: MaterialApp.router(
         routerConfig: container.read(appRouterProvider),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       ),
     ),
   );
@@ -331,6 +334,8 @@ void main() {
           container: container,
           child: MaterialApp.router(
             routerConfig: container.read(appRouterProvider),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
           ),
         ),
       );
@@ -357,6 +362,8 @@ void main() {
         container: container,
         child: MaterialApp.router(
           routerConfig: container.read(appRouterProvider),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),
     );
@@ -493,6 +500,8 @@ void main() {
           container: container,
           child: MaterialApp.router(
             routerConfig: container.read(appRouterProvider),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
           ),
         ),
       );

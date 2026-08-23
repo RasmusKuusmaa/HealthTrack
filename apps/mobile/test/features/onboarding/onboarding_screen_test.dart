@@ -9,6 +9,7 @@ import 'package:healthtrack/data/local/app_database.dart';
 import 'package:healthtrack/data/local/op_writer.dart';
 import 'package:healthtrack/data/secure/secure_key_value_store.dart';
 import 'package:healthtrack/features/profile/profile_providers.dart';
+import 'package:healthtrack/l10n/app_localizations.dart';
 import 'package:healthtrack/features/profile/user_profile_materializer.dart';
 import 'package:healthtrack/features/profile/user_profile_repository.dart';
 import 'package:healthtrack/sync/entity_registry.dart';
@@ -87,6 +88,8 @@ void main() {
         container: container,
         child: MaterialApp.router(
           routerConfig: container.read(appRouterProvider),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),
     );

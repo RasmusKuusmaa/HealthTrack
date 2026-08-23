@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/device_platform.dart';
 import '../../core/network/api_providers.dart';
 import '../../core/router.dart';
+import '../../l10n/app_localizations.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/widgets/app_primary_button.dart';
 import 'auth_repository.dart';
@@ -74,8 +75,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign in')),
+      appBar: AppBar(title: Text(l10n.signInTitle)),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Form(
@@ -87,7 +89,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: l10n.signInEmailLabel),
                 validator: (value) => (value == null || !value.contains('@'))
                     ? 'Enter a valid email'
                     : null,
@@ -96,7 +98,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
+                decoration: InputDecoration(
+                  labelText: l10n.signInPasswordLabel,
+                ),
                 validator: (value) => (value == null || value.isEmpty)
                     ? 'Enter your password'
                     : null,
@@ -110,7 +114,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ],
               const SizedBox(height: AppSpacing.lg),
               AppPrimaryButton(
-                label: 'Sign in',
+                label: l10n.signInTitle,
                 isLoading: _isSubmitting,
                 onPressed: _submit,
               ),
