@@ -8,6 +8,7 @@ import '../features/auth/mfa_challenge_screen.dart';
 import '../features/auth/mfa_enrollment_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/auth/verify_email_screen.dart';
+import '../features/onboarding/onboarding_screen.dart';
 import '../ui/placeholder_screen.dart';
 import '../ui/shell/app_shell.dart';
 import 'auth/auth_state_provider.dart';
@@ -17,6 +18,7 @@ const registerPath = '/register';
 const verifyEmailPath = '/verify-email';
 const mfaChallengePath = '/mfa-challenge';
 const mfaEnrollmentPath = '/settings/mfa-enrollment';
+const onboardingPath = '/onboarding';
 const homePath = '/home';
 const logPath = '/log';
 const progressPath = '/progress';
@@ -82,6 +84,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: mfaEnrollmentPath,
         builder: (context, state) => const MfaEnrollmentScreen(),
+      ),
+      GoRoute(
+        path: onboardingPath,
+        builder: (context, state) => const OnboardingScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

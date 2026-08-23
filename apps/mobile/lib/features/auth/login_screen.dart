@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/auth/auth_state_provider.dart';
 import '../../core/device_platform.dart';
 import '../../core/network/api_providers.dart';
 import '../../core/router.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/widgets/app_primary_button.dart';
 import 'auth_repository.dart';
+import 'post_sign_in_navigation.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -51,7 +51,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       switch (outcome) {
         case LoginOutcome.authenticated:
-          ref.read(isAuthenticatedProvider.notifier).signIn();
+          await navigateAfterSignIn(context, ref);
         case LoginOutcome.mfaRequired:
           context.push(
             mfaChallengePath,

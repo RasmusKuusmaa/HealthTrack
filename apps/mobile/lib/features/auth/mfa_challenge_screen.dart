@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/auth/auth_state_provider.dart';
 import '../../core/device_platform.dart';
 import '../../core/network/api_providers.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/widgets/app_primary_button.dart';
 import 'auth_repository.dart';
+import 'post_sign_in_navigation.dart';
 
 /// Reached from [LoginScreen] when `/auth/login` reports MFA is required.
 /// Re-submits the same credentials plus a TOTP or recovery code.
@@ -53,7 +53,7 @@ class _MfaChallengeScreenState extends ConsumerState<MfaChallengeScreen> {
       if (!mounted) return;
 
       if (outcome == LoginOutcome.authenticated) {
-        ref.read(isAuthenticatedProvider.notifier).signIn();
+        await navigateAfterSignIn(context, ref);
       } else {
         // The server asked for MFA again despite a code being sent — treat
         // it the same as a rejected code rather than looping silently.

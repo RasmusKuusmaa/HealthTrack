@@ -2,16 +2,29 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:healthtrack/core/auth/auth_state_provider.dart';
 import 'package:healthtrack/core/network/api_providers.dart';
 import 'package:healthtrack/core/router.dart';
+import 'package:healthtrack/data/local/app_database.dart';
+import 'package:healthtrack/data/local/op_writer.dart';
 import 'package:healthtrack/data/secure/secure_key_value_store.dart';
 import 'package:healthtrack/data/secure/token_store.dart';
 import 'package:healthtrack/features/auth/auth_repository.dart';
-import 'package:healthtrack_api_client/healthtrack_api_client.dart';
+import 'package:healthtrack/features/profile/profile_providers.dart';
+import 'package:healthtrack/features/profile/user_profile_materializer.dart';
+import 'package:healthtrack/features/profile/user_profile_repository.dart';
+import 'package:healthtrack/sync/entity_registry.dart';
+import 'package:healthtrack/sync/entity_writer.dart';
+import 'package:healthtrack/sync/local_materializer.dart';
+import 'package:healthtrack/sync/sync_api.dart';
+import 'package:healthtrack/sync/sync_cursor_store.dart';
+import 'package:healthtrack/sync/sync_engine.dart';
+import 'package:healthtrack_api_client/healthtrack_api_client.dart'
+    show AuthApi;
 
 class _InMemorySecureStore implements SecureKeyValueStore {
   final values = <String, String>{};
@@ -25,6 +38,68 @@ class _InMemorySecureStore implements SecureKeyValueStore {
   @override
   Future<void> delete(String key) async => values.remove(key);
 }
+
+class _FakeSyncApi implements SyncApi {
+  _FakeSyncApi(this.bootstrapSnapshot);
+
+  final BootstrapSnapshot bootstrapSnapshot;
+
+  @override
+  Future<List<PushOpResult>> push(List<PushOpRequest> ops) async => const [];
+
+  @override
+  Future<PullPage> pull({required int since, int? limit}) async {
+    return const PullPage(ops: [], nextCursor: 0);
+  }
+
+  @override
+  Future<BootstrapSnapshot> bootstrap() async => bootstrapSnapshot;
+}
+
+/// A [UserProfileRepository] whose first `ensureLoaded()` bootstraps from
+/// [bootstrapSnapshot] — empty by default, so login lands on onboarding
+/// unless a test supplies a snapshot with a complete profile.
+UserProfileRepository _profileRepository({
+  BootstrapSnapshot bootstrapSnapshot = const BootstrapSnapshot(
+    entities: {},
+    cursor: 0,
+  ),
+}) {
+  final db = AppDatabase.forTesting(NativeDatabase.memory());
+  final registry = EntityRegistry()
+    ..register('user_profile', UserProfileMaterializer(db));
+  final materializer = LocalMaterializer(db, registry);
+  final opWriter = OpWriter(db, userId: 'user-1', deviceId: 'device-1');
+  final syncEngine = SyncEngine(
+    db: db,
+    api: _FakeSyncApi(bootstrapSnapshot),
+    cursorStore: SyncCursorStore(_InMemorySecureStore()),
+    materializer: materializer,
+    registry: registry,
+    userId: 'user-1',
+  );
+  return UserProfileRepository(
+    db: db,
+    entityWriter: EntityWriter(db, opWriter, materializer),
+    syncEngine: syncEngine,
+    userId: 'user-1',
+  );
+}
+
+const _completeProfileSnapshot = BootstrapSnapshot(
+  entities: {
+    'user_profile': [
+      {
+        'id': 'user-1',
+        'display_name': 'Ada',
+        'birth_date': '1990-01-01',
+        'sex_at_birth': 'female',
+        'height_cm': 170.0,
+      },
+    ],
+  },
+  cursor: 1,
+);
 
 class _ScriptedAdapter implements HttpClientAdapter {
   _ScriptedAdapter(this._responses);
@@ -73,10 +148,18 @@ AuthRepository _repositoryWith(
 
 Future<ProviderContainer> _pumpApp(
   WidgetTester tester,
-  AuthRepository repository,
-) async {
+  AuthRepository repository, {
+  BootstrapSnapshot? profileSnapshot,
+}) async {
   final container = ProviderContainer(
-    overrides: [authRepositoryProvider.overrideWith((ref) async => repository)],
+    overrides: [
+      authRepositoryProvider.overrideWith((ref) async => repository),
+      userProfileRepositoryProvider.overrideWith(
+        (ref) async => profileSnapshot == null
+            ? _profileRepository()
+            : _profileRepository(bootstrapSnapshot: profileSnapshot),
+      ),
+    ],
   );
   addTearDown(container.dispose);
 
@@ -93,26 +176,57 @@ Future<ProviderContainer> _pumpApp(
 }
 
 void main() {
-  testWidgets('successful login redirects into the app shell', (tester) async {
-    await _pumpApp(
-      tester,
-      _repositoryWith({
-        '/auth/login': (_) => _json(200, {
-          'access_token': 'access-1',
-          'refresh_token': 'refresh-1',
-          'token_type': 'bearer',
-          'expires_in': 900,
+  testWidgets(
+    'successful login with an incomplete profile goes to onboarding',
+    (tester) async {
+      await _pumpApp(
+        tester,
+        _repositoryWith({
+          '/auth/login': (_) => _json(200, {
+            'access_token': 'access-1',
+            'refresh_token': 'refresh-1',
+            'token_type': 'bearer',
+            'expires_in': 900,
+          }),
         }),
-      }),
-    );
+      );
 
-    await tester.enterText(find.byType(TextFormField).at(0), 'a@example.com');
-    await tester.enterText(find.byType(TextFormField).at(1), 'password123');
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
-    await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField).at(0), 'a@example.com');
+      await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Home — coming soon'), findsOneWidget);
-  });
+      expect(
+        find.widgetWithText(AppBar, 'Set up your profile'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'successful login with an already-complete profile goes to the shell',
+    (tester) async {
+      await _pumpApp(
+        tester,
+        _repositoryWith({
+          '/auth/login': (_) => _json(200, {
+            'access_token': 'access-1',
+            'refresh_token': 'refresh-1',
+            'token_type': 'bearer',
+            'expires_in': 900,
+          }),
+        }),
+        profileSnapshot: _completeProfileSnapshot,
+      );
+
+      await tester.enterText(find.byType(TextFormField).at(0), 'a@example.com');
+      await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Home — coming soon'), findsOneWidget);
+    },
+  );
 
   testWidgets('a failed login shows an error and stays on the sign-in screen', (
     tester,
@@ -275,6 +389,7 @@ void main() {
           });
         },
       }),
+      profileSnapshot: _completeProfileSnapshot,
     );
 
     await tester.enterText(find.byType(TextFormField).at(0), 'a@example.com');
@@ -334,6 +449,7 @@ void main() {
             return _json(200, {'mfa_required': true});
           },
         }),
+        profileSnapshot: _completeProfileSnapshot,
       );
 
       await tester.enterText(find.byType(TextFormField).at(0), 'a@example.com');
