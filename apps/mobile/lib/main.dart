@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/error_handling.dart';
 import 'core/flavor.dart';
 import 'core/router.dart';
 import 'l10n/app_localizations.dart';
@@ -13,8 +14,11 @@ void main() {
 }
 
 void bootstrap(AppConfig config) {
-  AppConfig.instance = config;
-  runApp(const ProviderScope(child: MyApp()));
+  runGuarded(() {
+    configureGlobalErrorHandling();
+    AppConfig.instance = config;
+    runApp(const ProviderScope(child: MyApp()));
+  });
 }
 
 class MyApp extends ConsumerWidget {
@@ -29,6 +33,7 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      restorationScopeId: 'app',
       routerConfig: router,
     );
   }
