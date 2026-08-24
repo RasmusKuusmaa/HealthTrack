@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/widgets/app_primary_button.dart';
 import '../../ui/widgets/unit_aware_number_field.dart';
+import '../profile/profile_providers.dart';
 import 'weight_entry_payload.dart';
 import 'weight_providers.dart';
+import 'weight_unit_conversion.dart';
 
-/// Logs a single weight entry for right now. Unit conversion (entering a
-/// value in lb, stored canonically in kg) is not wired up yet.
+/// Logs a single weight entry for right now, in the signed-in user's
+/// preferred unit — always converted to and stored canonically in kg.
 class WeightLoggingScreen extends ConsumerStatefulWidget {
   const WeightLoggingScreen({super.key});
 
@@ -31,14 +33,20 @@ class _WeightLoggingScreenState extends ConsumerState<WeightLoggingScreen> {
     super.dispose();
   }
 
-  double? get _enteredWeightKg =>
-      double.tryParse(_weightController.text.trim());
+  double? get _enteredValue => double.tryParse(_weightController.text.trim());
 
-  bool get _canSave => _enteredWeightKg != null && _enteredWeightKg! > 0;
+  bool get _canSave => _enteredValue != null && _enteredValue! > 0;
+
+  bool get _isImperial => isImperial(
+    ref
+        .read(currentUnitSystemProvider)
+        .maybeWhen(data: (unitSystem) => unitSystem, orElse: () => null),
+  );
 
   Future<void> _save() async {
-    final weightKg = _enteredWeightKg;
-    if (weightKg == null) return;
+    final enteredValue = _enteredValue;
+    if (enteredValue == null) return;
+    final weightKg = _isImperial ? lbToKg(enteredValue) : enteredValue;
 
     setState(() {
       _isSubmitting = true;
@@ -71,6 +79,11 @@ class _WeightLoggingScreenState extends ConsumerState<WeightLoggingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final unitSystem = ref
+        .watch(currentUnitSystemProvider)
+        .maybeWhen(data: (unitSystem) => unitSystem, orElse: () => null);
+    final unitLabel = unitLabelFor(unitSystem);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Log weight')),
       body: Padding(
@@ -80,7 +93,7 @@ class _WeightLoggingScreenState extends ConsumerState<WeightLoggingScreen> {
           children: [
             UnitAwareNumberField(
               controller: _weightController,
-              unitLabel: 'kg',
+              unitLabel: unitLabel,
               labelText: 'Weight',
               onChanged: (_) => setState(() {}),
             ),

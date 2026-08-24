@@ -15,3 +15,14 @@ Future<UserProfileRepository> userProfileRepository(Ref ref) async {
     userId: await ref.watch(currentUserIdProvider.future),
   );
 }
+
+/// The signed-in user's preferred unit system ('metric' or 'imperial'),
+/// updating live as the profile changes locally. Null until the profile has
+/// ever been loaded.
+@riverpod
+Stream<String?> currentUnitSystem(Ref ref) {
+  final repositoryFuture = ref.watch(userProfileRepositoryProvider.future);
+  return Stream.fromFuture(repositoryFuture)
+      .asyncExpand((repository) => repository.watch())
+      .map((profile) => profile?.unitSystem);
+}

@@ -50,3 +50,47 @@ final class UserProfileRepositoryProvider
 
 String _$userProfileRepositoryHash() =>
     r'56ab2800c0d0774a2e747c93bdf72b853a0e910c';
+
+/// The signed-in user's preferred unit system ('metric' or 'imperial'),
+/// updating live as the profile changes locally. Null until the profile has
+/// ever been loaded.
+
+@ProviderFor(currentUnitSystem)
+final currentUnitSystemProvider = CurrentUnitSystemProvider._();
+
+/// The signed-in user's preferred unit system ('metric' or 'imperial'),
+/// updating live as the profile changes locally. Null until the profile has
+/// ever been loaded.
+
+final class CurrentUnitSystemProvider
+    extends $FunctionalProvider<AsyncValue<String?>, String?, Stream<String?>>
+    with $FutureModifier<String?>, $StreamProvider<String?> {
+  /// The signed-in user's preferred unit system ('metric' or 'imperial'),
+  /// updating live as the profile changes locally. Null until the profile has
+  /// ever been loaded.
+  CurrentUnitSystemProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentUnitSystemProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentUnitSystemHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<String?> create(Ref ref) {
+    return currentUnitSystem(ref);
+  }
+}
+
+String _$currentUnitSystemHash() => r'208a3c03fdc640d6495fe0a602ec976496bdbb37';
