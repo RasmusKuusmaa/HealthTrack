@@ -4,6 +4,7 @@ import '../core/network/api_providers.dart';
 import '../data/local/app_database.dart';
 import '../data/local/op_writer.dart';
 import '../features/profile/user_profile_materializer.dart';
+import '../features/weight/weight_entry_materializer.dart';
 import 'entity_registry.dart';
 import 'entity_writer.dart';
 import 'local_materializer.dart';
@@ -26,7 +27,8 @@ AppDatabase appDatabase(Ref ref) {
 EntityRegistry entityRegistry(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return EntityRegistry()
-    ..register('user_profile', UserProfileMaterializer(db));
+    ..register('user_profile', UserProfileMaterializer(db))
+    ..register('weight_entry', WeightEntryMaterializer(db));
 }
 
 @riverpod

@@ -3,15 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:healthtrack/sync/sync_providers.dart';
 
 void main() {
-  test('user_profile is registered in the entity registry', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
+  test(
+    'user_profile and weight_entry are registered in the entity registry',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
 
-    final registry = container.read(entityRegistryProvider);
+      final registry = container.read(entityRegistryProvider);
 
-    expect(registry['user_profile'], isNotNull);
-    expect(registry['weight_entry'], isNull);
-  });
+      expect(registry['user_profile'], isNotNull);
+      expect(registry['weight_entry'], isNotNull);
+    },
+  );
 
   test('appDatabase is a single shared instance', () {
     final container = ProviderContainer();

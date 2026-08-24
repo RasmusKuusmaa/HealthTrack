@@ -8,23 +8,31 @@ import 'package:path_provider/path_provider.dart';
 import 'tables/entity_field_versions_table.dart';
 import 'tables/operations_table.dart';
 import 'tables/user_profiles_table.dart';
+import 'tables/weight_entries_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Operations, EntityFieldVersions, UserProfiles])
+@DriftDatabase(
+  tables: [Operations, EntityFieldVersions, UserProfiles, WeightEntries],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   AppDatabase.forTesting(super.connection) : super();
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          await m.createTable(weightEntries);
+        }
       },
     );
   }

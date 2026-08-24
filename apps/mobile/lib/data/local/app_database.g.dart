@@ -1651,6 +1651,574 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   }
 }
 
+class $WeightEntriesTable extends WeightEntries
+    with TableInfo<$WeightEntriesTable, WeightEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WeightEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _loggedAtUtcMeta = const VerificationMeta(
+    'loggedAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> loggedAtUtc = GeneratedColumn<DateTime>(
+    'logged_at_utc',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localDateMeta = const VerificationMeta(
+    'localDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localDate = GeneratedColumn<DateTime>(
+    'local_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tzOffsetMinutesMeta = const VerificationMeta(
+    'tzOffsetMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> tzOffsetMinutes = GeneratedColumn<int>(
+    'tz_offset_minutes',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _weightKgMeta = const VerificationMeta(
+    'weightKg',
+  );
+  @override
+  late final GeneratedColumn<double> weightKg = GeneratedColumn<double>(
+    'weight_kg',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('manual'),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    loggedAtUtc,
+    localDate,
+    tzOffsetMinutes,
+    weightKg,
+    source,
+    note,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'weight_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WeightEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('logged_at_utc')) {
+      context.handle(
+        _loggedAtUtcMeta,
+        loggedAtUtc.isAcceptableOrUnknown(
+          data['logged_at_utc']!,
+          _loggedAtUtcMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_date')) {
+      context.handle(
+        _localDateMeta,
+        localDate.isAcceptableOrUnknown(data['local_date']!, _localDateMeta),
+      );
+    }
+    if (data.containsKey('tz_offset_minutes')) {
+      context.handle(
+        _tzOffsetMinutesMeta,
+        tzOffsetMinutes.isAcceptableOrUnknown(
+          data['tz_offset_minutes']!,
+          _tzOffsetMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('weight_kg')) {
+      context.handle(
+        _weightKgMeta,
+        weightKg.isAcceptableOrUnknown(data['weight_kg']!, _weightKgMeta),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WeightEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WeightEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      loggedAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}logged_at_utc'],
+      ),
+      localDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}local_date'],
+      ),
+      tzOffsetMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tz_offset_minutes'],
+      ),
+      weightKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}weight_kg'],
+      ),
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $WeightEntriesTable createAlias(String alias) {
+    return $WeightEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class WeightEntry extends DataClass implements Insertable<WeightEntry> {
+  final String id;
+  final String userId;
+  final DateTime? loggedAtUtc;
+  final DateTime? localDate;
+  final int? tzOffsetMinutes;
+  final double? weightKg;
+  final String source;
+  final String? note;
+  final DateTime? deletedAt;
+  const WeightEntry({
+    required this.id,
+    required this.userId,
+    this.loggedAtUtc,
+    this.localDate,
+    this.tzOffsetMinutes,
+    this.weightKg,
+    required this.source,
+    this.note,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || loggedAtUtc != null) {
+      map['logged_at_utc'] = Variable<DateTime>(loggedAtUtc);
+    }
+    if (!nullToAbsent || localDate != null) {
+      map['local_date'] = Variable<DateTime>(localDate);
+    }
+    if (!nullToAbsent || tzOffsetMinutes != null) {
+      map['tz_offset_minutes'] = Variable<int>(tzOffsetMinutes);
+    }
+    if (!nullToAbsent || weightKg != null) {
+      map['weight_kg'] = Variable<double>(weightKg);
+    }
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  WeightEntriesCompanion toCompanion(bool nullToAbsent) {
+    return WeightEntriesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      loggedAtUtc: loggedAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(loggedAtUtc),
+      localDate: localDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localDate),
+      tzOffsetMinutes: tzOffsetMinutes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tzOffsetMinutes),
+      weightKg: weightKg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(weightKg),
+      source: Value(source),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory WeightEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WeightEntry(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      loggedAtUtc: serializer.fromJson<DateTime?>(json['loggedAtUtc']),
+      localDate: serializer.fromJson<DateTime?>(json['localDate']),
+      tzOffsetMinutes: serializer.fromJson<int?>(json['tzOffsetMinutes']),
+      weightKg: serializer.fromJson<double?>(json['weightKg']),
+      source: serializer.fromJson<String>(json['source']),
+      note: serializer.fromJson<String?>(json['note']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'loggedAtUtc': serializer.toJson<DateTime?>(loggedAtUtc),
+      'localDate': serializer.toJson<DateTime?>(localDate),
+      'tzOffsetMinutes': serializer.toJson<int?>(tzOffsetMinutes),
+      'weightKg': serializer.toJson<double?>(weightKg),
+      'source': serializer.toJson<String>(source),
+      'note': serializer.toJson<String?>(note),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  WeightEntry copyWith({
+    String? id,
+    String? userId,
+    Value<DateTime?> loggedAtUtc = const Value.absent(),
+    Value<DateTime?> localDate = const Value.absent(),
+    Value<int?> tzOffsetMinutes = const Value.absent(),
+    Value<double?> weightKg = const Value.absent(),
+    String? source,
+    Value<String?> note = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => WeightEntry(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    loggedAtUtc: loggedAtUtc.present ? loggedAtUtc.value : this.loggedAtUtc,
+    localDate: localDate.present ? localDate.value : this.localDate,
+    tzOffsetMinutes: tzOffsetMinutes.present
+        ? tzOffsetMinutes.value
+        : this.tzOffsetMinutes,
+    weightKg: weightKg.present ? weightKg.value : this.weightKg,
+    source: source ?? this.source,
+    note: note.present ? note.value : this.note,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  WeightEntry copyWithCompanion(WeightEntriesCompanion data) {
+    return WeightEntry(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      loggedAtUtc: data.loggedAtUtc.present
+          ? data.loggedAtUtc.value
+          : this.loggedAtUtc,
+      localDate: data.localDate.present ? data.localDate.value : this.localDate,
+      tzOffsetMinutes: data.tzOffsetMinutes.present
+          ? data.tzOffsetMinutes.value
+          : this.tzOffsetMinutes,
+      weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
+      source: data.source.present ? data.source.value : this.source,
+      note: data.note.present ? data.note.value : this.note,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WeightEntry(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('loggedAtUtc: $loggedAtUtc, ')
+          ..write('localDate: $localDate, ')
+          ..write('tzOffsetMinutes: $tzOffsetMinutes, ')
+          ..write('weightKg: $weightKg, ')
+          ..write('source: $source, ')
+          ..write('note: $note, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    loggedAtUtc,
+    localDate,
+    tzOffsetMinutes,
+    weightKg,
+    source,
+    note,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WeightEntry &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.loggedAtUtc == this.loggedAtUtc &&
+          other.localDate == this.localDate &&
+          other.tzOffsetMinutes == this.tzOffsetMinutes &&
+          other.weightKg == this.weightKg &&
+          other.source == this.source &&
+          other.note == this.note &&
+          other.deletedAt == this.deletedAt);
+}
+
+class WeightEntriesCompanion extends UpdateCompanion<WeightEntry> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<DateTime?> loggedAtUtc;
+  final Value<DateTime?> localDate;
+  final Value<int?> tzOffsetMinutes;
+  final Value<double?> weightKg;
+  final Value<String> source;
+  final Value<String?> note;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const WeightEntriesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.loggedAtUtc = const Value.absent(),
+    this.localDate = const Value.absent(),
+    this.tzOffsetMinutes = const Value.absent(),
+    this.weightKg = const Value.absent(),
+    this.source = const Value.absent(),
+    this.note = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WeightEntriesCompanion.insert({
+    required String id,
+    required String userId,
+    this.loggedAtUtc = const Value.absent(),
+    this.localDate = const Value.absent(),
+    this.tzOffsetMinutes = const Value.absent(),
+    this.weightKg = const Value.absent(),
+    this.source = const Value.absent(),
+    this.note = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId);
+  static Insertable<WeightEntry> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<DateTime>? loggedAtUtc,
+    Expression<DateTime>? localDate,
+    Expression<int>? tzOffsetMinutes,
+    Expression<double>? weightKg,
+    Expression<String>? source,
+    Expression<String>? note,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (loggedAtUtc != null) 'logged_at_utc': loggedAtUtc,
+      if (localDate != null) 'local_date': localDate,
+      if (tzOffsetMinutes != null) 'tz_offset_minutes': tzOffsetMinutes,
+      if (weightKg != null) 'weight_kg': weightKg,
+      if (source != null) 'source': source,
+      if (note != null) 'note': note,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WeightEntriesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<DateTime?>? loggedAtUtc,
+    Value<DateTime?>? localDate,
+    Value<int?>? tzOffsetMinutes,
+    Value<double?>? weightKg,
+    Value<String>? source,
+    Value<String?>? note,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return WeightEntriesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      loggedAtUtc: loggedAtUtc ?? this.loggedAtUtc,
+      localDate: localDate ?? this.localDate,
+      tzOffsetMinutes: tzOffsetMinutes ?? this.tzOffsetMinutes,
+      weightKg: weightKg ?? this.weightKg,
+      source: source ?? this.source,
+      note: note ?? this.note,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (loggedAtUtc.present) {
+      map['logged_at_utc'] = Variable<DateTime>(loggedAtUtc.value);
+    }
+    if (localDate.present) {
+      map['local_date'] = Variable<DateTime>(localDate.value);
+    }
+    if (tzOffsetMinutes.present) {
+      map['tz_offset_minutes'] = Variable<int>(tzOffsetMinutes.value);
+    }
+    if (weightKg.present) {
+      map['weight_kg'] = Variable<double>(weightKg.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WeightEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('loggedAtUtc: $loggedAtUtc, ')
+          ..write('localDate: $localDate, ')
+          ..write('tzOffsetMinutes: $tzOffsetMinutes, ')
+          ..write('weightKg: $weightKg, ')
+          ..write('source: $source, ')
+          ..write('note: $note, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1658,6 +2226,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $EntityFieldVersionsTable entityFieldVersions =
       $EntityFieldVersionsTable(this);
   late final $UserProfilesTable userProfiles = $UserProfilesTable(this);
+  late final $WeightEntriesTable weightEntries = $WeightEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1666,6 +2235,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     operations,
     entityFieldVersions,
     userProfiles,
+    weightEntries,
   ];
   @override
   DriftDatabaseOptions get options =>
@@ -2502,6 +3072,286 @@ typedef $$UserProfilesTableProcessedTableManager =
       UserProfile,
       PrefetchHooks Function()
     >;
+typedef $$WeightEntriesTableCreateCompanionBuilder =
+    WeightEntriesCompanion Function({
+      required String id,
+      required String userId,
+      Value<DateTime?> loggedAtUtc,
+      Value<DateTime?> localDate,
+      Value<int?> tzOffsetMinutes,
+      Value<double?> weightKg,
+      Value<String> source,
+      Value<String?> note,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$WeightEntriesTableUpdateCompanionBuilder =
+    WeightEntriesCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<DateTime?> loggedAtUtc,
+      Value<DateTime?> localDate,
+      Value<int?> tzOffsetMinutes,
+      Value<double?> weightKg,
+      Value<String> source,
+      Value<String?> note,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+class $$WeightEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $WeightEntriesTable> {
+  $$WeightEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get loggedAtUtc => $composableBuilder(
+    column: $table.loggedAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localDate => $composableBuilder(
+    column: $table.localDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get tzOffsetMinutes => $composableBuilder(
+    column: $table.tzOffsetMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WeightEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $WeightEntriesTable> {
+  $$WeightEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get loggedAtUtc => $composableBuilder(
+    column: $table.loggedAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localDate => $composableBuilder(
+    column: $table.localDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get tzOffsetMinutes => $composableBuilder(
+    column: $table.tzOffsetMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WeightEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WeightEntriesTable> {
+  $$WeightEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get loggedAtUtc => $composableBuilder(
+    column: $table.loggedAtUtc,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localDate =>
+      $composableBuilder(column: $table.localDate, builder: (column) => column);
+
+  GeneratedColumn<int> get tzOffsetMinutes => $composableBuilder(
+    column: $table.tzOffsetMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get weightKg =>
+      $composableBuilder(column: $table.weightKg, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$WeightEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WeightEntriesTable,
+          WeightEntry,
+          $$WeightEntriesTableFilterComposer,
+          $$WeightEntriesTableOrderingComposer,
+          $$WeightEntriesTableAnnotationComposer,
+          $$WeightEntriesTableCreateCompanionBuilder,
+          $$WeightEntriesTableUpdateCompanionBuilder,
+          (
+            WeightEntry,
+            BaseReferences<_$AppDatabase, $WeightEntriesTable, WeightEntry>,
+          ),
+          WeightEntry,
+          PrefetchHooks Function()
+        > {
+  $$WeightEntriesTableTableManager(_$AppDatabase db, $WeightEntriesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WeightEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WeightEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WeightEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<DateTime?> loggedAtUtc = const Value.absent(),
+                Value<DateTime?> localDate = const Value.absent(),
+                Value<int?> tzOffsetMinutes = const Value.absent(),
+                Value<double?> weightKg = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WeightEntriesCompanion(
+                id: id,
+                userId: userId,
+                loggedAtUtc: loggedAtUtc,
+                localDate: localDate,
+                tzOffsetMinutes: tzOffsetMinutes,
+                weightKg: weightKg,
+                source: source,
+                note: note,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<DateTime?> loggedAtUtc = const Value.absent(),
+                Value<DateTime?> localDate = const Value.absent(),
+                Value<int?> tzOffsetMinutes = const Value.absent(),
+                Value<double?> weightKg = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WeightEntriesCompanion.insert(
+                id: id,
+                userId: userId,
+                loggedAtUtc: loggedAtUtc,
+                localDate: localDate,
+                tzOffsetMinutes: tzOffsetMinutes,
+                weightKg: weightKg,
+                source: source,
+                note: note,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WeightEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WeightEntriesTable,
+      WeightEntry,
+      $$WeightEntriesTableFilterComposer,
+      $$WeightEntriesTableOrderingComposer,
+      $$WeightEntriesTableAnnotationComposer,
+      $$WeightEntriesTableCreateCompanionBuilder,
+      $$WeightEntriesTableUpdateCompanionBuilder,
+      (
+        WeightEntry,
+        BaseReferences<_$AppDatabase, $WeightEntriesTable, WeightEntry>,
+      ),
+      WeightEntry,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2512,4 +3362,6 @@ class $AppDatabaseManager {
       $$EntityFieldVersionsTableTableManager(_db, _db.entityFieldVersions);
   $$UserProfilesTableTableManager get userProfiles =>
       $$UserProfilesTableTableManager(_db, _db.userProfiles);
+  $$WeightEntriesTableTableManager get weightEntries =>
+      $$WeightEntriesTableTableManager(_db, _db.weightEntries);
 }

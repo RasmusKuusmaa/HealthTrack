@@ -97,7 +97,7 @@ final class EntityRegistryProvider
   }
 }
 
-String _$entityRegistryHash() => r'faf9e64ef1557fc656e17612a3111018d944b479';
+String _$entityRegistryHash() => r'21736ea434d0cf06c242db8cc33330f3cf0c6ccb';
 
 @ProviderFor(localMaterializer)
 final localMaterializerProvider = LocalMaterializerProvider._();
