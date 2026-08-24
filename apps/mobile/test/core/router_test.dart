@@ -99,6 +99,6 @@ void main() {
     await tester.tap(find.text('Log'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Log — coming soon'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Log weight'), findsOneWidget);
   });
 }

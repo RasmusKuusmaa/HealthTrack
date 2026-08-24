@@ -9,6 +9,7 @@ import '../features/auth/mfa_enrollment_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/auth/verify_email_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/weight/weight_logging_screen.dart';
 import '../ui/placeholder_screen.dart';
 import '../ui/shell/app_shell.dart';
 import 'auth/auth_state_provider.dart';
@@ -106,8 +107,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: logPath,
-                builder: (context, state) =>
-                    const PlaceholderScreen(title: 'Log'),
+                builder: (context, state) => const WeightLoggingScreen(),
               ),
             ],
           ),
